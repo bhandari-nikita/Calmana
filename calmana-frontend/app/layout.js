@@ -1,7 +1,7 @@
 //calmana-frontend/app/layout.js
-import Footer from '@/components/Footer'
+// import Footer from '@/components/Footer'
 import './globals.css'
-import Navbar from '@/components/Navbar'
+// import Navbar from '@/components/Navbar'
 
 export const metadata = {
   title: 'Calmana', // fixed name spelling
@@ -13,7 +13,7 @@ export const metadata = {
       sizes: '45x45',
     },
   },
-};
+}; 
 
 export default function RootLayout({ children }) {
   return (
@@ -30,9 +30,9 @@ export default function RootLayout({ children }) {
       {/* <body className="bg-[var(--soft-green)] text-gray-800"> */}
       <body className="bg-white text-gray-800">
 
-        <Navbar />
+        {/* <Navbar /> */}
         <main className="p-1">{children}</main>
-        <Footer />
+        {/* <Footer /> */}
       </body>
     </html>
   );
