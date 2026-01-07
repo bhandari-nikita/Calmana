@@ -1,13 +1,22 @@
-//
+//calmana-backend/models/User.js
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   passwordHash: { type: String, required: true },
-    role: { type: String, enum: ["user", "admin"], default: "user" },  // 👈 Add this
-  createdAt: { type: Date, default: Date.now }
+  role: { type: String, enum: ["user", "admin"], default: "user" },
+
+  // 🔑 ADD THIS
+  registeredDate: {
+    type: String, // YYYY-MM-DD
+    required: true,
+    index: true,
+  },
+
+  createdAt: { type: Date, default: Date.now },
 });
+
 
 // Ensure unique indexes
 // userSchema.index({ username: 1 }, { unique: true });

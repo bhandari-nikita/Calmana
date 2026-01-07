@@ -85,6 +85,13 @@ router.use(protect);
 // }
 // });
 
+function istDateKey(ts) {
+  return new Date(ts).toLocaleDateString("en-CA", {
+    timeZone: "Asia/Kolkata",
+  });
+}
+
+
 
 router.get("/calendar", async (req, res) => {
   try {
@@ -100,11 +107,17 @@ router.get("/calendar", async (req, res) => {
     const startKey = `${y}-${m}-01`;
     const endKey = `${y}-${m}-31`;
 
+    const startUTC = new Date(`${y}-${m}-01T00:00:00.000Z`);
+    const endUTC = new Date(`${y}-${m}-31T23:59:59.999Z`);
+
     const [moods, journals, breaths, quizzes] = await Promise.all([
+
+
       MoodEntry.find({
         user: req.user._id,
-        date: { $gte: startKey, $lte: endKey },
+        timestamp: { $gte: startUTC, $lte: endUTC },
       }),
+
 
       JournalEntry.find({
         user: req.user._id,
@@ -126,11 +139,12 @@ router.get("/calendar", async (req, res) => {
     const days = {};
 
     moods.forEach((mood) => {
-      const iso = mood.date;
+      const iso = istDateKey(mood.timestamp);
       days[iso] = days[iso] || {};
       days[iso].mood = mood.mood;
       days[iso].moodValue = mood.moodValue;
     });
+
 
     journals.forEach((j) => {
       const iso = j.dateKey;
@@ -158,7 +172,15 @@ router.get("/calendar", async (req, res) => {
     });
 
 
-    res.json(days);
+    const todayKey = new Date().toLocaleDateString("en-CA", {
+      timeZone: "Asia/Kolkata",
+    });
+
+    res.json({
+      todayKey,
+      days,
+    });
+
   } catch (err) {
     console.error("calendar error:", err);
     res.status(500).json({ message: "Server error" });

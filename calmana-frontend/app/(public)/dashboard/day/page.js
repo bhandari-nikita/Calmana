@@ -1,4 +1,4 @@
-// calmana-frontend/app/dashboard/day/page.js
+// calmana-frontend/app/(public)/dashboard/day/page.js
 "use client";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";

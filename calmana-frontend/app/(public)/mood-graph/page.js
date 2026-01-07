@@ -1,3 +1,4 @@
+//calmana-frontend/app/(public)/mood-graph/page.js
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -19,7 +20,7 @@ export default function MoodGraph() {
   const [dataPoints, setDataPoints] = useState([]);
 
   const [offset, setOffset] = useState(0);
-  const [dayOffset, setDayOffset] = useState(0);
+  // const [dayOffset, setDayOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState("");
 
   const [metaLabel, setMetaLabel] = useState("");
@@ -39,13 +40,25 @@ export default function MoodGraph() {
   useEffect(() => setIsClient(true), []);
   useEffect(() => {
     setOffset(0);
-    setDayOffset(0);
+
     setSelectedDate("");
   }, [view]);
 
+  function getDateKey() {
+    if (selectedDate) return selectedDate;
+
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+
+    return `${y}-${m}-${d}`;
+  }
+
+
   useEffect(() => {
     fetchData();
-  }, [view, offset, dayOffset, selectedDate]);
+  }, [view, offset, selectedDate]);
 
   //   async function fetchData() {
   //     setLoading(true);
@@ -192,6 +205,15 @@ export default function MoodGraph() {
   //   }
   // }
 
+  useEffect(() => {
+    // 🔥 RESET meta label when switching views
+    if (view === "today") {
+      setMetaLabel(""); // clear week/month garbage immediately
+    }
+  }, [view]);
+
+
+
   async function fetchData() {
     setLoading(true);
 
@@ -206,8 +228,8 @@ export default function MoodGraph() {
       let url = "";
 
       if (view === "today") {
-        url = `${API}/mood/today`;
-        url += selectedDate ? `?date=${selectedDate}` : `?offset=${dayOffset}`;
+        const dateKey = getDateKey();
+        url = `${API}/mood/day?date=${dateKey}`;
       }
 
       if (view === "week") {
@@ -217,6 +239,7 @@ export default function MoodGraph() {
       if (view === "month") {
         url = `${API}/mood/month?offset=${offset}`;
       }
+
 
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -233,6 +256,7 @@ export default function MoodGraph() {
 
       /* ---------- DAY ---------- */
       if (view === "today") {
+        const dateKey = getDateKey();
         const entries = json.moods || [];
 
         const points = entries.map((e) => {
@@ -243,18 +267,26 @@ export default function MoodGraph() {
             timeZone: "Asia/Kolkata",
           });
 
-
           return {
             x: istTime,
             moodValue: e.moodValue,
             moodLabel: moodLabels[e.moodValue] || "",
           };
-
         });
 
         setDataPoints(points);
-        setMetaLabel(formatFullDate(new Date()));
+
+        if (json.date) {
+          const [y, m, d] = json.date.split("-");
+          setMetaLabel(
+            formatFullDate(new Date(Number(y), Number(m) - 1, Number(d)))
+          );
+        }
+
+
       }
+
+
 
       /* ---------- WEEK / MONTH ---------- */
       else {
@@ -300,25 +332,28 @@ export default function MoodGraph() {
     });
   }
 
+  const shiftDay = (delta) => {
+    const base = selectedDate ? new Date(selectedDate) : new Date();
+    base.setDate(base.getDate() + delta);
+
+    const y = base.getFullYear();
+    const m = String(base.getMonth() + 1).padStart(2, "0");
+    const d = String(base.getDate()).padStart(2, "0");
+
+    setSelectedDate(`${y}-${m}-${d}`);
+  };
+
+
   const prev = () => {
-    if (view === "today") {
-      setSelectedDate("");
-      setDayOffset((o) => o - 1);
-    } else {
-      setOffset((o) => o - 1);
-    }
+    if (view === "today") shiftDay(-1);
+    else setOffset((o) => o - 1);
   };
 
   const next = () => {
-    if (view === "today") {
-      if (dayOffset >= 0) return;
-      setSelectedDate("");
-      setDayOffset((o) => o + 1);
-    } else {
-      if (offset >= 0) return;
-      setOffset((o) => o + 1);
-    }
+    if (view === "today") shiftDay(1);
+    else if (offset < 0) setOffset((o) => o + 1);
   };
+
 
   if (!isClient) return null;
 
@@ -333,12 +368,17 @@ export default function MoodGraph() {
       {/* VIEW BUTTONS */}
       <div className="flex gap-3 mb-4">
         <button
-          onClick={() => setView("today")}
+          onClick={() => {
+            setSelectedDate("");   // reset date
+            setMetaLabel("");     // reset label FIRST
+            setView("today");     // then switch view
+          }}
           className={`px-4 py-2 rounded ${view === "today" ? "bg-[#4e937a] text-white" : "bg-white border"
             }`}
         >
           Day
         </button>
+
         <button
           onClick={() => setView("week")}
           className={`px-4 py-2 rounded ${view === "week" ? "bg-[#4e937a] text-white" : "bg-white border"

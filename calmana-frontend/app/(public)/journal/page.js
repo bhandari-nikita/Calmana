@@ -1,4 +1,4 @@
-// calmana-frontend/app/journal/page.js
+//calmana-frontend/app/(public)/journal/page.js
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -38,6 +38,16 @@ const PROMPTS = [
 //   const day = new Date().getDate();
 //   return PROMPTS[day % PROMPTS.length];
 // }
+
+function formatISTTime(ts) {
+  if (!ts) return "";
+  return new Date(ts).toLocaleTimeString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
 
 
 export default function JournalPage() {
@@ -174,7 +184,7 @@ export default function JournalPage() {
     const content = list
       .map(
         (e) =>
-          `${new Date(e.date).toLocaleString()}\n${e.text}\n\n--------------`
+          `${formatISTTime(e.createdAt)}\n${e.text}\n\n--------------`
       )
       .join("\n");
 
@@ -437,10 +447,9 @@ export default function JournalPage() {
 
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <div>
-                            {new Date(it.date).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {formatISTTime(it.createdAt)}
+
+
                           </div>
 
                           <div className="flex gap-2">

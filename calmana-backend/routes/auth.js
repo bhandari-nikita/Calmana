@@ -3,6 +3,8 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const getISTDateKey = require("../utils/dateKey");
+
 
 const router = express.Router();
 
@@ -21,10 +23,12 @@ router.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await User.create({
-      username,
-      email,
-      passwordHash: hashedPassword,
-    });
+  username,
+  email,
+  passwordHash: hashedPassword,
+  registeredDate: getISTDateKey(), // ⭐ ADD THIS LINE
+});
+
 
     res.status(201).json({ success: true, message: "User registered" });
   } catch (err) {

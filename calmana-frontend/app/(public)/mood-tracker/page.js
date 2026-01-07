@@ -1,4 +1,4 @@
-//calmana-frontend/app/mood-tracker/page.js
+//calmana-frontend/app/(public)/mood-tracker/page.js
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -35,27 +35,40 @@ export default function MoodTracker() {
   };
 
   // ⭐ Correct API: Express backend
-  const fetchTodayMoods = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
+const fetchTodayMoods = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-      const res = await fetch(`${API}/mood/today`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    // local day key (NOT UTC)
+    const now = new Date();
+    const todayKey = `${now.getFullYear()}-${String(
+      now.getMonth() + 1
+    ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
-      const data = await res.json();
-
-      if (res.ok) {
-        setTodayMoods(data.moods || []);
-        setAverageMood(data.averageMood || null);
-      } else {
-        console.error("Error fetching moods:", data.message);
+    const res = await fetch(
+      `${API}/mood/day?date=${todayKey}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-    } catch (err) {
-      console.error("Error:", err);
+    );
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Non-JSON response:", text);
+      return;
     }
-  };
+
+    const data = await res.json();
+    setTodayMoods(data.moods || []);
+    setAverageMood(data.averageMood || null);
+
+  } catch (err) {
+    console.error("Error fetching moods:", err);
+  }
+};
 
   // ⭐ Correct API: Express backend
   const handleSave = async () => {

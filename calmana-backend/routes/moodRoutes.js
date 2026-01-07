@@ -16,6 +16,50 @@ const moodMap = {
   Angry: 1,
 };
 
+function getISTDateKey() {
+  const now = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+
+  return `${y}-${m}-${d}`;
+}
+
+router.get("/day", protect, async (req, res) => {
+  try {
+    await connectDB();
+
+    const { date } = req.query;
+    if (!date) {
+      return res.status(400).json({ message: "Date required" });
+    }
+
+    const entries = await MoodEntry.find({
+      user: req.user._id,
+      dateKey: date,
+    }).sort({ timestamp: 1 });
+
+    const avg =
+      entries.length
+        ? entries.reduce((s, e) => s + e.moodValue, 0) / entries.length
+        : null;
+
+    res.json({
+      date,              // 🔥 THIS WAS MISSING
+      moods: entries,
+      averageMood: avg,
+    });
+
+  } catch (err) {
+    console.error("Mood day error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 // ADD MOOD ENTRY
 router.post("/add", protect, async (req, res) => {
   try {
@@ -39,18 +83,16 @@ router.post("/add", protect, async (req, res) => {
     // });
 
 
-    const now = new Date();
 
-    // FORCE UTC DATE KEY
-    const dateKey = now.toISOString().slice(0, 10);
 
     const entry = await MoodEntry.create({
       user: req.user._id,
       mood,
       moodValue: moodMap[mood],
-      date: dateKey,
-      timestamp: now, // keep full timestamp for ordering
+      dateKey: getISTDateKey(), // 🔒 source of truth
+      timestamp: new Date(),    // still useful
     });
+
 
 
     res.status(201).json(entry);
@@ -61,50 +103,7 @@ router.post("/add", protect, async (req, res) => {
 });
 
 // GET TODAY'S MOODS
-router.get("/today", protect, async (req, res) => {
-  try {
-    await connectDB();
 
-    // const start = new Date();
-    // start.setHours(0, 0, 0, 0);
-
-    // const end = new Date();
-    // end.setHours(23, 59, 59, 999);
-
-
-    const now = new Date();
-
-    const start = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate(),
-      0, 0, 0, 0
-    ));
-
-    const end = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate(),
-      23, 59, 59, 999
-    ));
-
-
-    const entries = await MoodEntry.find({
-      user: req.user._id,
-      timestamp: { $gte: start, $lte: end },
-    }).sort({ timestamp: 1 });
-
-    const avg =
-      entries.length > 0
-        ? entries.reduce((sum, e) => sum + e.moodValue, 0) / entries.length
-        : null;
-
-    res.json({ moods: entries, averageMood: avg });
-  } catch (err) {
-    console.error("Mood today error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
 
 // WEEK VIEW
 router.get("/week", protect, async (req, res) => {
@@ -116,79 +115,66 @@ router.get("/week", protect, async (req, res) => {
     // FORCE IST
     const now = new Date();
     const istNow = new Date(
-      now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
     );
 
-    // Monday-based week
-    const day = istNow.getDay(); // Sun=0, Mon=1 ...
+    const day = istNow.getDay();
     const diff = (day === 0 ? -6 : 1) - day;
 
-    const weekStart = new Date(istNow);
-    weekStart.setDate(istNow.getDate() + diff);
-    weekStart.setHours(0, 0, 0, 0);
+    const istWeekStart = new Date(istNow);
+    istWeekStart.setDate(istNow.getDate() + diff);
+    istWeekStart.setHours(0, 0, 0, 0);
 
-    // apply offset
-    const start = new Date(weekStart);
-    start.setDate(start.getDate() + offset * 7);
-
-    const end = new Date(start);
-    end.setDate(end.getDate() + 6);
-    end.setHours(23, 59, 59, 999);
+    const istWeekEnd = new Date(istWeekStart);
+    istWeekEnd.setDate(istWeekStart.getDate() + 6);
+    istWeekEnd.setHours(23, 59, 59, 999);
 
 
-    // const entries = await MoodEntry.find({
-    //   user: req.user._id,
-    //   timestamp: { $gte: start, $lte: end },
-    // });
-
-    const startKey = start.toISOString().slice(0, 10);
-    const endKey = end.toISOString().slice(0, 10);
+    const startUTC = new Date(istWeekStart.toISOString());
+    const endUTC = new Date(istWeekEnd.toISOString());
 
     const entries = await MoodEntry.find({
       user: req.user._id,
-      date: { $gte: startKey, $lte: endKey },
+      timestamp: { $gte: startUTC, $lt: endUTC },
     });
+
 
 
     const days = [];
 
     for (let i = 0; i < 7; i++) {
-      const dayDate = new Date(start);
-      dayDate.setDate(dayDate.getDate() + i);
+      const istDayStart = new Date(istWeekStart);
+      istDayStart.setDate(istWeekStart.getDate() + i);
 
-      // const dayEntries = entries.filter((e) => {
-      //   const d = new Date(e.timestamp);
-      //   return d.toDateString() === dayDate.toDateString();
-      // });
+      const istDayEnd = new Date(istDayStart);
+      istDayEnd.setHours(23, 59, 59, 999);
 
-
-      const dayKey = dayDate.toISOString().slice(0, 10);
-
-      const dayEntries = entries.filter(e => e.date === dayKey);
-
+      const dayEntries = entries.filter(e => {
+        const istTime = new Date(
+          e.timestamp.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+        );
+        return istTime >= istDayStart && istTime <= istDayEnd;
+      });
 
       const avg =
-        dayEntries.length > 0
+        dayEntries.length
           ? dayEntries.reduce((s, e) => s + e.moodValue, 0) / dayEntries.length
           : null;
 
-      // days.push({
-      //   date: dayDate.toLocaleDateString(),
-      //   averageMood: avg,
-      // });
-
       days.push({
-        date: dayKey,
+        date: istDayStart.toISOString().slice(0, 10),
         averageMood: avg,
       });
-
     }
+
+    res.set("Cache-Control", "no-store");
 
     res.json({
       days,
-      start,
-      end,
+      start: istWeekStart,
+      end: istWeekEnd,
     });
+
   } catch (err) {
     console.error("Week error:", err);
     res.status(500).json({ message: "Server error" });
@@ -201,38 +187,60 @@ router.get("/month", protect, async (req, res) => {
     await connectDB();
 
     const offset = parseInt(req.query.offset || "0", 10);
-    const today = new Date();
+    const istNow = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+    );
 
-    const start = new Date(today.getFullYear(), today.getMonth() + offset, 1);
-    const end = new Date(today.getFullYear(), today.getMonth() + offset + 1, 0);
+    const istMonthStart = new Date(
+      istNow.getFullYear(),
+      istNow.getMonth() + offset,
+      1
+    );
+    istMonthStart.setHours(0, 0, 0, 0);
+
+    const istMonthEnd = new Date(
+      istMonthStart.getFullYear(),
+      istMonthStart.getMonth() + 1,
+      0,
+      23, 59, 59, 999
+    );
 
     // const entries = await MoodEntry.find({
     //   user: req.user._id,
     //   timestamp: { $gte: start, $lte: end },
     // });
 
-    const startKey = start.toISOString().slice(0, 10);
-    const endKey = end.toISOString().slice(0, 10);
+    const startUTC = new Date(istMonthStart.toISOString());
+    const endUTC = new Date(istMonthEnd.toISOString());
 
     const entries = await MoodEntry.find({
       user: req.user._id,
-      date: { $gte: startKey, $lte: endKey },
+      timestamp: { $gte: startUTC, $lte: endUTC },
     });
+
 
 
     const days = [];
 
-    for (let i = 1; i <= end.getDate(); i++) {
-      const dayDate = new Date(start.getFullYear(), start.getMonth(), i);
+    for (let i = 1; i <= istMonthEnd.getDate(); i++) {
 
       // const dayEntries = entries.filter((e) => {
       //   const d = new Date(e.timestamp);
       //   return d.toDateString() === dayDate.toDateString();
       // });
 
-      const dayKey = dayDate.toISOString().slice(0, 10);
+      const istDayStart = new Date(istMonthStart);
+      istDayStart.setDate(istMonthStart.getDate() + (i - 1));
 
-      const dayEntries = entries.filter(e => e.date === dayKey);
+      const istDayEnd = new Date(istDayStart);
+      istDayEnd.setHours(23, 59, 59, 999);
+
+      const dayEntries = entries.filter(e => {
+        const istTime = new Date(
+          e.timestamp.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+        );
+        return istTime >= istDayStart && istTime <= istDayEnd;
+      });
 
 
       const avg =
@@ -246,16 +254,19 @@ router.get("/month", protect, async (req, res) => {
       // });
 
       days.push({
-        date: dayKey,
+        date: istDayStart.toISOString().slice(0, 10),
         averageMood: avg,
       });
+
 
     }
 
     res.json({
       days,
-      start,
+      start: istMonthStart,
+      end: istMonthEnd,
     });
+
   } catch (err) {
     console.error("Month error:", err);
     res.status(500).json({ message: "Server error" });

@@ -15,28 +15,24 @@ const MOOD_MAP = {
   Tired: { emoji: "😴", tint: "bg-violet-50", text: "text-violet-800" }
 };
 
-export default function Calendar({ moods = {}, visibleMonth, onMonthChange }) {
+function toISTKey(ts) {
+  if (!ts) return null;
+  return new Date(ts).toLocaleDateString("en-CA", {
+    timeZone: "Asia/Kolkata",
+  });
+}
+
+
+export default function Calendar({ moods = {}, todayKey, visibleMonth, onMonthChange }) {
+
   const router = useRouter();
   const [selectedDay] = useState(null);
 
   // Normalize moods prop -> map keyed by ISO date "YYYY-MM-DD"
-  const moodByDate = useMemo(() => {
-    if (!moods) return {};
-    if (!Array.isArray(moods) && typeof moods === "object") {
-      return moods;
-    }
-
-    const map = {};
-    moods.forEach((m) => {
-      if (!m || !m.date) return;
-      map[m.date] = {
-        ...m, // ⭐ DO NOT DROP quiz
-        journalCount: m.journalCount || 0,
-        breathingCount: m.breathingCount || 0,
-      };
-    });
-    return map;
-  }, [moods]);
+const moodByDate = useMemo(() => {
+  if (!moods || typeof moods !== "object") return {};
+  return moods; // already keyed by YYYY-MM-DD
+}, [moods]);
 
 
   // visibleMonth must contain { year, month }
@@ -89,11 +85,7 @@ export default function Calendar({ moods = {}, visibleMonth, onMonthChange }) {
     onMonthChange({ year: y, month: m });
   }
 
-  const today = new Date();
-  const isToday = (d) =>
-    d === today.getDate() &&
-    month === today.getMonth() + 1 &&
-    year === today.getFullYear();
+
 
   return (
     <div>
@@ -161,7 +153,7 @@ export default function Calendar({ moods = {}, visibleMonth, onMonthChange }) {
                 key={iso}
                 onClick={() => router.push(`/dashboard/day?date=${iso}`)}
                 aria-label={`Open ${iso}`}
-                className={`relative min-h-[72px] sm:min-h-[96px] p-1.5 sm:p-2 rounded-lg text-left border border-emerald-50 hover:shadow-sm transition-all ${isToday(day) ? "ring-2 ring-emerald-200" : ""} ${tintClass}`}
+                className={`relative min-h-[72px] sm:min-h-[96px] p-1.5 sm:p-2 rounded-lg text-left border border-emerald-50 hover:shadow-sm transition-all ${iso === todayKey ? "ring-2 ring-emerald-200" : ""}} ${tintClass}`}
               >
                 <div className="flex justify-between items-start">
                   <div className={`text-xs sm:text-sm font-medium leading-none ${textClass}`}>
