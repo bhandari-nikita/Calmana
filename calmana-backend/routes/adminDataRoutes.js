@@ -43,14 +43,31 @@ router.get("/summary", adminProtect, async (req, res) => {
   const totalQuizzes = await Quiz.countDocuments();
   const totalBreathing = await BreathingSession.countDocuments();
 
+  // 🔴 IMPORTANT FIX
+  const avgBreathingPerUser =
+    totalUsers > 0
+      ? Number((totalBreathing / totalUsers).toFixed(2))
+      : 0;
+
+  // ✅ NEW: Mood logging rate (per user)
+  const moodLoggingRate =
+    totalUsers > 0
+      ? Number((totalMoods / totalUsers).toFixed(2))
+      : 0;
+
+
   res.json({
     totalUsers,
     totalMoods,
     totalJournals,
     totalQuizzes,
-    totalBreathing
+    totalBreathing,
+    avgBreathingPerUser,
+    moodLoggingRate // ⭐ ADD THIS
   });
+
 });
+
 
 // USERS LIST
 router.get("/users", adminProtect, async (req, res) => {
@@ -250,52 +267,52 @@ router.get("/analytics/quiz-distribution", adminProtect, async (req, res) => {
 });
 
 // ANALYTICS – PEAK HOUR
-router.get("/analytics/peak-hour", adminProtect, async (req, res) => {
-  try {
-    const { start, end } = parseRange(req, 30);
-    const cacheKey = `peak:${start}:${end}`;
-    const cached = analyticsCache.get(cacheKey);
-    if (cached) return res.json(cached);
+// router.get("/analytics/peak-hour", adminProtect, async (req, res) => {
+//   try {
+//     const { start, end } = parseRange(req, 30);
+//     const cacheKey = `peak:${start}:${end}`;
+//     const cached = analyticsCache.get(cacheKey);
+//     if (cached) return res.json(cached);
 
-    const { start: s, end: e } = toDayRange(start, end);
+//     const { start: s, end: e } = toDayRange(start, end);
 
-    const byHour = async (Model, dateField) =>
-      Model.aggregate([
-        { $match: { [dateField]: { $gte: s, $lte: e } } },
-        { $project: { hour: { $hour: `$${dateField}` } } },
-        { $group: { _id: "$hour", count: { $sum: 1 } } }
-      ]);
+//     const byHour = async (Model, dateField) =>
+//       Model.aggregate([
+//         { $match: { [dateField]: { $gte: s, $lte: e } } },
+//         { $project: { hour: { $hour: `$${dateField}` } } },
+//         { $group: { _id: "$hour", count: { $sum: 1 } } }
+//       ]);
 
-    const [mood, journal, quiz, breath] = await Promise.all([
-      byHour(Mood, "timestamp"),
-      byHour(Journal, "createdAt"),
-      byHour(Quiz, "takenAt"),
-      byHour(BreathingSession, "createdAt")
-    ]);
+//     const [mood, journal, quiz, breath] = await Promise.all([
+//       byHour(Mood, "timestamp"),
+//       byHour(Journal, "createdAt"),
+//       byHour(Quiz, "takenAt"),
+//       byHour(BreathingSession, "createdAt")
+//     ]);
 
-    const totals = {};
-    [mood, journal, quiz, breath].forEach(list => {
-      list.forEach(r => {
-        totals[r._id] = (totals[r._id] || 0) + r.count;
-      });
-    });
+//     const totals = {};
+//     [mood, journal, quiz, breath].forEach(list => {
+//       list.forEach(r => {
+//         totals[r._id] = (totals[r._id] || 0) + r.count;
+//       });
+//     });
 
-    let peakHour = 0, peakCount = 0;
-    Object.keys(totals).forEach(h => {
-      if (totals[h] > peakCount) {
-        peakCount = totals[h];
-        peakHour = Number(h);
-      }
-    });
+//     let peakHour = 0, peakCount = 0;
+//     Object.keys(totals).forEach(h => {
+//       if (totals[h] > peakCount) {
+//         peakCount = totals[h];
+//         peakHour = Number(h);
+//       }
+//     });
 
-    const out = { peakHour, peakCount };
-    analyticsCache.set(cacheKey, out);
-    res.json(out);
+//     const out = { peakHour, peakCount };
+//     analyticsCache.set(cacheKey, out);
+//     res.json(out);
 
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
-  }
-});
+//   } catch (err) {
+//     res.status(500).json({ error: "Server error" });
+//   }
+// });
 
 // ANALYTICS – AFFIRMATION POPULARITY
 router.get("/analytics/affirmation-popularity", adminProtect, async (req, res) => {

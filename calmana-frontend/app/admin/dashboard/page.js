@@ -36,7 +36,6 @@ export default function AdminDashboard() {
   const [activeUsers, setActiveUsers] = useState([]);
   const [quizDist, setQuizDist] = useState([]);
   const [affList, setAffList] = useState([]);
-  const [peakHour, setPeakHour] = useState(null);
 
   const range = useMemo(() => {
     if (rangeKey === "custom") return { start: customStart, end: customEnd };
@@ -54,7 +53,7 @@ export default function AdminDashboard() {
       setLoading(true);
       try {
         const [
-          sumRes, trendRes, usersRes, quizRes, affRes, peakRes
+          sumRes, trendRes, usersRes, quizRes, affRes,
         ] = await Promise.all([
           axios.get(`http://localhost:5000/api/admin-data/summary`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -71,9 +70,7 @@ export default function AdminDashboard() {
           axios.get(`http://localhost:5000/api/admin-data/analytics/affirmation-popularity`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get(`http://localhost:5000/api/admin-data/analytics/peak-hour`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
+
         ]);
 
         setSummary(sumRes.data || {});
@@ -81,7 +78,7 @@ export default function AdminDashboard() {
         setActiveUsers(usersRes.data || []);
         setQuizDist(quizRes.data || []);
         setAffList(affRes.data || []);
-        setPeakHour(peakRes.data || {});
+
 
       } catch (err) {
         console.error(err);
@@ -95,6 +92,31 @@ export default function AdminDashboard() {
 
   if (loading) return <p>Loading analytics…</p>;
 
+function StatCard({ title, value, subtitle, muted }) {
+  return (
+    <div className={`bg-white p-5 rounded-xl border transition
+      ${muted ? "border-gray-200 text-gray-500" : "border-gray-200 hover:shadow-md"}
+    `}>
+      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">
+        {title}
+      </p>
+
+      <p className="text-3xl font-semibold text-gray-900">
+        {value}
+      </p>
+
+      {subtitle && (
+        <p className="text-xs text-gray-500 mt-1">
+          {subtitle}
+        </p>
+      )}
+    </div>
+  );
+}
+
+
+
+
   return (
     <>
       <motion.div
@@ -104,102 +126,111 @@ export default function AdminDashboard() {
       >
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-green-900">Analytics Dashboard</h1>
-          <div className="text-sm text-gray-600">
-            Peak Hour: <strong>{peakHour?.peakHour ?? "-"}:00</strong>
+        <div className="flex items-start justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Admin Overview
+            </h1>
+            <p className="text-sm text-gray-600">
+              System status and recent activity
+            </p>
           </div>
+
+
         </div>
+
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 mb-6">
-          {[
-            { label: "Users", value: summary.totalUsers ?? 0 },
-            { label: "Journals", value: summary.totalJournals ?? 0 },
-            { label: "Moods Logged", value: summary.totalMoods ?? 0 },
-            { label: "Breathing Sessions", value: summary.totalBreathing ?? 0 },
-            { label: "Quizzes Taken", value: summary.totalQuizzes ?? 0 }, // ⭐ NEW CARD
-          ].map((card, i) => (
-            <div
-              key={i}
-              className="bg-white p-5 rounded-xl shadow-md flex flex-col items-center justify-center h-24"
-            >
-              <p className="text-green-700 text-sm">{card.label}</p>
-              <p className="text-2xl font-bold">{card.value}</p>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            title="Total Users"
+            value={summary.totalUsers ?? 0}
+          />
+          <StatCard
+            title="Active Today"
+            value={activeUsers?.[activeUsers.length - 1]?.activeUsers ?? 0}
+          />
+          <StatCard
+  title="Mood Logging Rate"
+  value={summary.moodLoggingRate ?? 0}
+  subtitle="entries per user"
+/>
+
+          <StatCard
+  title="Breathing Engagement"
+  value={summary.avgBreathingPerUser ?? 0}
+  subtitle="avg sessions per user"
+/>
+
         </div>
 
 
-        {/* Charts */}
+
+        {/* ANALYTICS ROW */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {/* Mood Trend */}
-          <div className="bg-white p-6 rounded-xl shadow-md h-[330px]">
-            <h3 className="text-lg font-semibold text-green-800 mb-3">Mood Trend</h3>
-            <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={moodTrend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="count" stroke="#2F855A" strokeWidth={3} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Daily Active Users */}
-          <div className="bg-white p-6 rounded-xl shadow-md">
-            <h3 className="text-lg font-semibold text-green-800 mb-3">Daily Active Users</h3>
-            <ResponsiveContainer width="100%" height={240}>
+          {/* USER ACTIVITY */}
+          <div className="lg:col-span-2 bg-white p-5 rounded-xl border">
+            <h3 className="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+              User Activity (Last 7 Days)
+            </h3>
+            <ResponsiveContainer width="100%" height={200}>
               <BarChart data={activeUsers}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
-                <Bar dataKey="activeUsers" fill="#48BB78" />
+                <Bar dataKey="activeUsers" fill="#2F855A" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          {/* Quiz Distribution */}
-          <div className="bg-white p-6 rounded-xl shadow-md">
-            <h3 className="text-lg font-semibold text-green-800 mb-3">Quiz Distribution</h3>
-            <ResponsiveContainer width="100%" height={240}>
-              <PieChart>
-                <Pie
-                  data={quizDist}
-                  dataKey="count"
-                  nameKey="label"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  label
-                >
-                  {quizDist.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+          {/* RIGHT COLUMN */}
+          <div className="flex flex-col gap-6">
 
+            {/* QUIZ USAGE */}
+            <div className="bg-white p-4 rounded-xl border">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                Quiz Usage
+              </h3>
+              <ResponsiveContainer width="100%" height={140}>
+                <PieChart>
+                  <Pie
+                    data={quizDist}
+                    dataKey="count"
+                    nameKey="label"
+                    innerRadius={40}
+                    outerRadius={60}
+                  >
+                    {quizDist.map((_, i) => (
+                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* BREATHING */}
+            {/* <div className="bg-white p-4 rounded-xl border">
+              <h3 className="text-sm font-semibold text-gray-700">
+                Breathing Engagement
+              </h3>
+
+              <p className="text-3xl font-bold text-green-800 mt-1">
+                {summary.avgBreathingPerUser?.toFixed(1) ?? "0.0"}
+
+              </p>
+
+              <p className="text-xs text-gray-500">
+                Avg sessions per user
+              </p>
+            </div> */}
+
+
+          </div>
         </div>
 
-        {/* Affirmations */}
-        <div className="mt-6 bg-white p-6 rounded-xl shadow-md">
-          <h3 className="text-lg font-semibold text-green-800 mb-3">Top Affirmations</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {affList.map((a, i) => (
-              <div key={i} className="p-2 border rounded flex justify-between">
-                <span>{a._id}</span>
-                <span className="text-green-700 font-bold">{a.count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
 
       </motion.div>
     </>
