@@ -37,35 +37,52 @@ function toDayRange(startStr, endStr) {
 
 // SUMMARY
 router.get("/summary", adminProtect, async (req, res) => {
-  const totalUsers = await User.countDocuments();
-  const totalMoods = await Mood.countDocuments();
-  const totalJournals = await Journal.countDocuments();
-  const totalQuizzes = await Quiz.countDocuments();
-  const totalBreathing = await BreathingSession.countDocuments();
+  try {
+    const { start, end } = parseRange(req, 7);
+    const { start: s, end: e } = toDayRange(start, end);
 
-  // 🔴 IMPORTANT FIX
-  const avgBreathingPerUser =
-    totalUsers > 0
-      ? Number((totalBreathing / totalUsers).toFixed(2))
-      : 0;
+    // Total users (global)
+    const totalUsers = await User.countDocuments();
 
-  // ✅ NEW: Mood logging rate (per user)
-  const moodLoggingRate =
-    totalUsers > 0
-      ? Number((totalMoods / totalUsers).toFixed(2))
-      : 0;
+    // Range-based counts
+    const totalMoods = await Mood.countDocuments({
+      timestamp: { $gte: s, $lte: e }
+    });
 
+    const totalBreathing = await BreathingSession.countDocuments({
+      createdAt: { $gte: s, $lte: e }
+    });
 
-  res.json({
-    totalUsers,
-    totalMoods,
-    totalJournals,
-    totalQuizzes,
-    totalBreathing,
-    avgBreathingPerUser,
-    moodLoggingRate // ⭐ ADD THIS
-  });
+    // Active users in selected range
+    const activeUsersInRange = await Mood.distinct("user", {
+      timestamp: { $gte: s, $lte: e }
+    });
 
+    // Active today
+    const today = new Date().toISOString().slice(0, 10);
+    const todayStart = new Date(today + "T00:00:00.000Z");
+    const todayEnd = new Date(today + "T23:59:59.999Z");
+
+    const activeTodayUsers = await Mood.distinct("user", {
+      timestamp: { $gte: todayStart, $lte: todayEnd }
+    });
+
+    res.json({
+      totalUsers,
+      activeToday: activeTodayUsers.length,
+      moodLoggingRate:
+        activeUsersInRange.length > 0
+          ? Number((totalMoods / activeUsersInRange.length).toFixed(1))
+          : 0,
+      avgBreathingPerUser:
+        activeUsersInRange.length > 0
+          ? Number((totalBreathing / activeUsersInRange.length).toFixed(1))
+          : 0
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load summary" });
+  }
 });
 
 

@@ -1,10 +1,11 @@
+//calmana-frontend/app/admin/users/page.js
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 6;
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
@@ -20,7 +21,7 @@ export default function AdminUsersPage() {
     }
 
     axios
-      .get("http://localhost:5000/api/admin-data/users", {
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/admin-data/users`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((r) => setUsers(r.data || []))
@@ -71,12 +72,12 @@ export default function AdminUsersPage() {
   }
 
   async function deleteUser(id) {
-    if (!confirm("Delete this user permanently?")) return;
+    if (!confirm("This will permanently delete the user and all their data. Continue?")) return;
 
     try {
       const token = localStorage.getItem("adminToken");
       await axios.delete(
-        `http://localhost:5000/api/admin-data/users/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin-data/users/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -88,7 +89,8 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-8 w-full lg:max-w-6xl lg:mx-auto">
+
       {/* ANIMATED CONTENT WRAPPED INSIDE STATIC DIV */}
       <motion.div
         initial={{ opacity: 0, y: 6 }}
@@ -97,10 +99,10 @@ export default function AdminUsersPage() {
         className="space-y-4"
       >
         {/* HEADER */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-2xl font-bold text-green-900">Users</h1>
-
           <div className="flex items-center gap-2">
+
             <input
               value={q}
               onChange={(e) => {
@@ -108,12 +110,12 @@ export default function AdminUsersPage() {
                 setPage(1);
               }}
               placeholder="Search username or email"
-              className="border rounded px-3 py-1"
+              className="border rounded px-3 py-1 w-full sm:w-auto"
             />
 
             <button
               onClick={exportCSV}
-              className="bg-green-700 text-white px-3 py-1 rounded"
+              className="bg-green-900 text-white border border-gray-300 hover:bg-gray-200 hover:text-green-800 hover:border-green-900 px-3 py-1 rounded transition"
             >
               Export CSV
             </button>
@@ -121,78 +123,125 @@ export default function AdminUsersPage() {
         </div>
 
         {/* TABLE */}
-        <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
-          <table className="min-w-full table-auto">
-            <thead className="bg-green-50 text-left text-sm text-green-800">
-              <tr>
-                <th className="p-4">Username</th>
-                <th className="p-4">Email</th>
-                <th className="p-4">Joined</th>
-                <th className="p-4">Actions</th>
-              </tr>
-            </thead>
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          {/* DESKTOP TABLE */}
+          <div className="hidden md:block">
+            <table className="min-w-full table-auto">
+              <thead className="bg-green-50 text-left text-sm text-green-800">
+                <tr>
+                  <th className="p-4">Username</th>
+                  <th className="p-4">Email</th>
+                  <th className="p-4">Joined</th>
+                  <th className="p-4">Actions</th>
+                </tr>
+              </thead>
 
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={4} className="p-4">
-                    Loading…
-                  </td>
-                </tr>
-              ) : current.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="p-4">
-                    No matching users found.
-                  </td>
-                </tr>
-              ) : (
-                current.map((u) => (
-                  <tr key={u._id} className="border-b hover:bg-green-50">
-                    <td className="p-4">{u.username}</td>
-                    <td className="p-4">{u.email}</td>
-                    <td className="p-4">
-                      {new Date(u.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="p-4">
-                      <button
-                        onClick={() => deleteUser(u._id)}
-                        className="bg-red-500 text-white px-3 py-1 rounded"
-                      >
-                        Delete
-                      </button>
-                    </td>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={4} className="p-4">Loading…</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : current.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="p-4">No matching users found.</td>
+                  </tr>
+                ) : (
+                  current.map((u) => (
+                    <tr key={u._id} className="border-b hover:bg-gray-100">
+                      <td className="p-4">{u.username}</td>
+                      <td className="p-4">{u.email}</td>
+                      <td className="p-4">
+                        {new Date(u.createdAt).toISOString().split("T")[0]}
+                      </td>
+                      <td className="p-4">
+                        <button
+                          onClick={() => deleteUser(u._id)}
+                          className="text-sm text-red-600 border border-red-200 px-3 py-1 rounded hover:bg-red-50 hover:border-red-300 transition"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        {/* PAGINATION */}
-        <div className="flex items-center justify-between text-sm">
-          <div>{filtered.length} users</div>
+          {/* MOBILE CARDS */}
+          <div className="md:hidden space-y-3 p-3">
+            {loading ? (
+              <p className="text-sm text-gray-500">Loading…</p>
+            ) : current.length === 0 ? (
+              <p className="text-sm text-gray-500">No matching users found.</p>
+            ) : (
+              current.map((u) => (
+                <div
+                  key={u._id}
+                  className="bg-white border rounded-lg p-4 shadow-sm"
+                >
+                  <p className="font-semibold text-gray-800">{u.username}</p>
+                  <p className="text-sm text-gray-600 break-all">{u.email}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Joined: {new Date(u.createdAt).toISOString().split("T")[0]}
+                  </p>
 
-          <div className="flex items-center gap-2">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="px-2 py-1 border rounded"
-            >
-              Prev
-            </button>
+                  <button
+                    onClick={() => deleteUser(u._id)}
+                    className="mt-3 w-full text-sm text-red-600 border border-red-200 rounded py-1.5 hover:bg-red-50 hover:border-red-300 transition"
+                  >
+                    Delete
+                  </button>
 
-            <div>
-              Page {page} / {totalPages}
+                </div>
+              ))
+            )}
+          </div>
+
+
+          {/* PAGINATION */}
+          <div className="border-t px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {/* PREVIOUS */}
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                aria-label="Previous page"
+                className={`
+                px-2 py-1 rounded border transition
+                ${page === 1
+                    ? "text-gray-300 border-gray-200 cursor-not-allowed"
+                    : "text-gray-700 border-green-300 hover:bg-green-100"
+                  }
+              `}>
+                ←
+              </button>
+
+              <span className="text-sm text-gray-600">
+                Page {page} / {totalPages}
+              </span>
+
+              {/* NEXT */}
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                aria-label="Next page"
+                className={`
+                px-2 py-1 rounded border transition
+                ${page === totalPages
+                    ? "text-gray-300 border-gray-200 cursor-not-allowed"
+                    : "text-gray-700 border-green-300 hover:bg-green-100"
+                  }
+              `}>
+                →
+              </button>
             </div>
 
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="px-2 py-1 border rounded"
-            >
-              Next
-            </button>
+            <span className="text-xs text-gray-400">
+              {filtered.length} users
+            </span>
           </div>
+
         </div>
       </motion.div>
     </div>

@@ -44,166 +44,21 @@ export default function MoodGraph() {
     setSelectedDate("");
   }, [view]);
 
-  function getDateKey() {
-    if (selectedDate) return selectedDate;
 
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, "0");
-    const d = String(now.getDate()).padStart(2, "0");
 
-    return `${y}-${m}-${d}`;
+  function formatISO(iso) {
+    const [y, m, d] = iso.slice(0, 10).split("-");
+    return `${d}/${m}/${y}`;
   }
+
+
 
 
   useEffect(() => {
     fetchData();
   }, [view, offset, selectedDate]);
 
-  //   async function fetchData() {
-  //     setLoading(true);
 
-  //     try {
-  //       const token = localStorage.getItem("token");
-  //       if (!token) {
-  //         alert("Please log in to view your mood graph.");
-  //         router.push("/login");
-  //         return;
-  //       }
-
-  //       let url = "";
-
-  //       // DAY
-  //       if (view === "today") {
-  //         url = `${API}/mood/today`;
-
-  //         if (selectedDate) {
-  //           url += `?date=${selectedDate}`;
-  //         } else {
-  //           url += `?offset=${dayOffset}`;
-  //         }
-  //       }
-
-  //       // WEEK
-  //       if (view === "week") {
-  //         url = `${API}/mood/week?offset=${offset}`;
-  //       }
-
-  //       // MONTH
-  //       if (view === "month") {
-  //         url = `${API}/mood/month?offset=${offset}`;
-  //       }
-
-  //       const res = await fetch(url, {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       });
-
-  //       const json = await res.json();
-
-  //       if (!res.ok) {
-  //         console.log(json);
-  //         alert(json.message || "Unable to fetch data");
-  //         setLoading(false);
-  //         return;
-  //       }
-
-  //       // DAY PROCESSING
-  //       if (view === "today") {
-  //         const entries = json.moods || [];
-
-  //         if (!selectedDate && json.date) {
-  //           setMetaLabel(formatFullDate(new Date(json.date)));
-  //         }
-
-  //         const points = entries.map((e) => {
-  //           const d = new Date(e.timestamp);
-
-  //           const utcTime = `${String(d.getUTCHours()).padStart(2, "0")}:${String(
-  //             d.getUTCMinutes()
-  //           ).padStart(2, "0")}`;
-
-  //           return {
-  //             x: utcTime,
-  //             moodValue: e.moodValue,
-  //             moodLabel: moodLabels[e.moodValue] || "",
-  //           };
-  //         });
-
-  //         setDataPoints(points);
-  //       }
-
-
-  //       // WEEK / MONTH PROCESSING
-  //       // else {
-  //       //   const points = entries.map((e) => {
-  //       //     const d = new Date(e.timestamp);
-
-  //       //     const utcTime = `${String(d.getUTCHours()).padStart(2, "0")}:${String(
-  //       //       d.getUTCMinutes()
-  //       //     ).padStart(2, "0")}`;
-
-  //       //     return {
-  //       //       x: utcTime,
-  //       //       moodValue: e.moodValue,
-  //       //       moodLabel: moodLabels[e.moodValue] || "",
-  //       //     };
-  //       //   });
-
-  //       // WEEK / MONTH PROCESSING
-  //       else {
-  //         const points = (json.days || []).map((d) => ({
-  //           x: d.date,
-  //           moodValue: d.averageMood ?? 0,
-  //           moodLabel:
-  //             d.averageMood === null
-  //               ? "No data"
-  //               : moodLabels[Math.round(d.averageMood)] || "",
-  //         }));
-
-  //         if (view === "week") {
-  //           const s = new Date(json.start);
-  //           const e = new Date(json.end);
-  //           setMetaLabel(`${s.toLocaleDateString()} - ${e.toLocaleDateString()}`);
-  //         }
-
-  //         if (view === "month") {
-  //           const s = new Date(json.start);
-  //           setMetaLabel(
-  //             s.toLocaleString(undefined, { month: "long", year: "numeric" })
-  //           );
-  //         }
-
-  //         setDataPoints(points);
-  //       }
-
-
-
-
-  //       if (view === "week") {
-  //         const s = new Date(json.start);
-  //         const e = new Date(json.end);
-  //         setMetaLabel(`${s.toLocaleDateString()} - ${e.toLocaleDateString()}`);
-  //       }
-
-  //       if (view === "month") {
-  //         const s = new Date(json.start);
-  //         setMetaLabel(
-  //           s.toLocaleString(undefined, { month: "long", year: "numeric" })
-  //         );
-  //       }
-
-  //       setDataPoints(points);
-  //     }
-
-  //       setLoading(false);
-  //   } catch (err) {
-  //     console.error("fetchData error:", err);
-  //     alert("Server error.");
-  //     setLoading(false);
-  //   }
-  // }
 
   useEffect(() => {
     // 🔥 RESET meta label when switching views
@@ -228,9 +83,10 @@ export default function MoodGraph() {
       let url = "";
 
       if (view === "today") {
-        const dateKey = getDateKey();
-        url = `${API}/mood/day?date=${dateKey}`;
+        const query = selectedDate ? `?date=${selectedDate}` : "";
+        url = `${API}/mood/day${query}`;
       }
+
 
       if (view === "week") {
         url = `${API}/mood/week?offset=${offset}`;
@@ -256,7 +112,7 @@ export default function MoodGraph() {
 
       /* ---------- DAY ---------- */
       if (view === "today") {
-        const dateKey = getDateKey();
+        // const dateKey = getDateKey();
         const entries = json.moods || [];
 
         const points = entries.map((e) => {
@@ -276,11 +132,14 @@ export default function MoodGraph() {
 
         setDataPoints(points);
 
+        // if (json.date) {
+        //   const [y, m, d] = json.date.split("-");
+        //   setMetaLabel(
+        //     formatFullDate(new Date(Number(y), Number(m) - 1, Number(d)))
+        //   );
+        // }
         if (json.date) {
-          const [y, m, d] = json.date.split("-");
-          setMetaLabel(
-            formatFullDate(new Date(Number(y), Number(m) - 1, Number(d)))
-          );
+          setMetaLabel(formatFullDateFromKey(json.date));
         }
 
 
@@ -302,17 +161,18 @@ export default function MoodGraph() {
         setDataPoints(points);
 
         if (view === "week") {
-          const s = new Date(json.start);
-          const e = new Date(json.end);
-          setMetaLabel(`${s.toLocaleDateString()} - ${e.toLocaleDateString()}`);
+          setMetaLabel(
+            `${formatISO(json.start)} - ${formatISO(json.end)}`
+          );
         }
 
         if (view === "month") {
-          const s = new Date(json.start);
-          setMetaLabel(
-            s.toLocaleString(undefined, { month: "long", year: "numeric" })
-          );
+          const [y, m] = json.start.slice(0, 7).split("-");
+          const monthName = new Date(Number(y), Number(m) - 1, 1)
+            .toLocaleString("en-IN", { month: "long" });
+          setMetaLabel(`${monthName} ${y}`);
         }
+
       }
 
       setLoading(false);
@@ -324,24 +184,35 @@ export default function MoodGraph() {
   }
 
 
-  function formatFullDate(d) {
-    return d.toLocaleDateString(undefined, {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+  function formatFullDateFromKey(key) {
+    const [y, m, d] = key.split("-");
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    return `${d} ${monthNames[Number(m) - 1]} ${y}`;
   }
 
-  const shiftDay = (delta) => {
-    const base = selectedDate ? new Date(selectedDate) : new Date();
-    base.setDate(base.getDate() + delta);
 
-    const y = base.getFullYear();
-    const m = String(base.getMonth() + 1).padStart(2, "0");
-    const d = String(base.getDate()).padStart(2, "0");
+  // if (json.date) {
+  //   setMetaLabel(formatFullDateFromKey(json.date));
+  // }
 
-    setSelectedDate(`${y}-${m}-${d}`);
-  };
+
+  function shiftDay(delta) {
+    if (!selectedDate) return;
+
+    const [y, m, d] = selectedDate.split("-").map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d + delta));
+
+    const ny = date.getUTCFullYear();
+    const nm = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const nd = String(date.getUTCDate()).padStart(2, "0");
+
+    setSelectedDate(`${ny}-${nm}-${nd}`);
+  }
+
+
 
 
   const prev = () => {

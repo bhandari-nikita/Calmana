@@ -1,3 +1,4 @@
+//calmana-frontend/app/admin/layout.js
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -35,6 +36,11 @@ export default function AdminLayout({ children }) {
     setSidebarOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    document.body.style.overflow = sidebarOpen ? "hidden" : "hidden";
+  }, [sidebarOpen]);
+
+
   /* ⛔ BLOCK RENDER UNTIL AUTH CHECK DONE */
   if (checkingAuth) return null;
 
@@ -54,10 +60,9 @@ export default function AdminLayout({ children }) {
       <a
         href={link}
         className={`block px-3 py-2 rounded-md transition
-          ${
-            isActive
-              ? "bg-green-50 text-green-700 font-medium"
-              : "hover:bg-gray-100 text-gray-700"
+          ${isActive
+            ? "bg-green-50 text-green-700 font-medium"
+            : "hover:bg-gray-100 text-gray-700"
           }
         `}
       >
@@ -67,26 +72,36 @@ export default function AdminLayout({ children }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 text-gray-800">
+    <div className="flex h-screen bg-gray-50 text-gray-800">
+
+
       {/* SIDEBAR */}
       <aside
         className={`
           fixed md:static z-40
-          h-full md:h-auto
+          h-screen
           w-60
           bg-white
           border-r border-gray-200
           p-4 flex flex-col justify-between
           transform transition-transform duration-300
-          ${
-            sidebarOpen
-              ? "translate-x-0"
-              : "-translate-x-full md:translate-x-0"
+          ${sidebarOpen
+            ? "translate-x-0"
+            : "-translate-x-full md:translate-x-0"
           }
         `}
       >
         <div>
-          <h2 className="text-sm font-bold tracking-wide text-gray-500 mb-6">
+          {/* MOBILE CLOSE BUTTON */}
+          <button
+            className="md:hidden absolute top-3 right-4 text-2xl text-gray-600 hover:text-gray-900"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
+          >
+            ✕
+          </button>
+
+          <h2 className="text-sm font-bold tracking-wide text-green-800 mb-6">
             CALMANA ADMIN
           </h2>
 
@@ -130,7 +145,7 @@ export default function AdminLayout({ children }) {
         {/* LOGOUT */}
         <div className="pt-4 border-t border-gray-200">
           <button
-            className="w-full text-sm text-red-600 hover:bg-red-50 py-2 rounded-md transition"
+            className="w-full text-sm text-red-600 hover:bg-red-50  rounded-md transition"
             onClick={() => {
               localStorage.removeItem("adminToken");
               router.replace("/admin/login");
@@ -144,14 +159,17 @@ export default function AdminLayout({ children }) {
       {/* MAIN AREA */}
       <main className="flex-1 flex flex-col">
         {/* TOP BAR */}
-        <div className="w-full bg-white shadow px-4 md:px-6 h-14 flex justify-between items-center">
+        <div className="w-full shadow px-4 md:px-6 h-14 flex justify-between items-center bg-green-50 border-b border-green-200">
           <div className="flex items-center gap-3">
             <button
-              className="md:hidden text-gray-700 text-xl"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="md:hidden text-gray-700 text-2xl leading-none"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open menu"
             >
               ☰
             </button>
+
+
 
             <h1 className="text-lg font-semibold text-gray-800">
               Admin Panel
@@ -168,8 +186,11 @@ export default function AdminLayout({ children }) {
 
         {/* CONTENT */}
         <div className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="px-4 py-4 w-full">{children}</div>
+          <div className="px-4 py-4 min-h-full">
+            {children}
+          </div>
         </div>
+
       </main>
     </div>
   );

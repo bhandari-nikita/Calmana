@@ -55,22 +55,27 @@ export default function AdminDashboard() {
         const [
           sumRes, trendRes, usersRes, quizRes, affRes,
         ] = await Promise.all([
-          axios.get(`http://localhost:5000/api/admin-data/summary`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get(`http://localhost:5000/api/admin-data/analytics/mood-trend`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get(`http://localhost:5000/api/admin-data/analytics/daily-active-users`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get(`http://localhost:5000/api/admin-data/analytics/quiz-distribution`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get(`http://localhost:5000/api/admin-data/analytics/affirmation-popularity`, {
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/admin-data/summary`, {
+            params: range,
             headers: { Authorization: `Bearer ${token}` }
           }),
 
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/admin-data/analytics/mood-trend`, {
+            params: range,
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/admin-data/analytics/daily-active-users`, {
+            params: range,
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/admin-data/analytics/quiz-distribution`, {
+            params: range,
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/admin-data/analytics/affirmation-popularity`, {
+            params: range,
+            headers: { Authorization: `Bearer ${token}` }
+          }),
         ]);
 
         setSummary(sumRes.data || {});
@@ -78,7 +83,6 @@ export default function AdminDashboard() {
         setActiveUsers(usersRes.data || []);
         setQuizDist(quizRes.data || []);
         setAffList(affRes.data || []);
-
 
       } catch (err) {
         console.error(err);
@@ -92,27 +96,27 @@ export default function AdminDashboard() {
 
   if (loading) return <p>Loading analytics…</p>;
 
-function StatCard({ title, value, subtitle, muted }) {
-  return (
-    <div className={`bg-white p-5 rounded-xl border transition
+  function StatCard({ title, value, subtitle, muted }) {
+    return (
+      <div className={`bg-white p-5 rounded-xl border transition
       ${muted ? "border-gray-200 text-gray-500" : "border-gray-200 hover:shadow-md"}
     `}>
-      <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">
-        {title}
-      </p>
-
-      <p className="text-3xl font-semibold text-gray-900">
-        {value}
-      </p>
-
-      {subtitle && (
-        <p className="text-xs text-gray-500 mt-1">
-          {subtitle}
+        <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">
+          {title}
         </p>
-      )}
-    </div>
-  );
-}
+
+        <p className="text-3xl font-semibold text-gray-900">
+          {value}
+        </p>
+
+        {subtitle && (
+          <p className="text-xs text-gray-500 mt-1">
+            {subtitle}
+          </p>
+        )}
+      </div>
+    );
+  }
 
 
 
@@ -126,7 +130,7 @@ function StatCard({ title, value, subtitle, muted }) {
       >
 
         {/* Header */}
-        <div className="flex items-start justify-between mb-8">
+        <div className="flex items-start justify-between mb-8 mt-3">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">
               Admin Overview
@@ -139,6 +143,10 @@ function StatCard({ title, value, subtitle, muted }) {
 
         </div>
 
+        <p className="text-xs font-semibold text-gray-500 uppercase mb-3">
+          Overview Metrics
+        </p>
+
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -148,42 +156,62 @@ function StatCard({ title, value, subtitle, muted }) {
           />
           <StatCard
             title="Active Today"
-            value={activeUsers?.[activeUsers.length - 1]?.activeUsers ?? 0}
+            value={summary.activeToday === 0 ? "—" : summary.activeToday}
+            subtitle={summary.activeToday === 0 ? "No activity today" : null}
           />
-          <StatCard
-  title="Mood Logging Rate"
-  value={summary.moodLoggingRate ?? 0}
-  subtitle="entries per user"
-/>
 
           <StatCard
-  title="Breathing Engagement"
-  value={summary.avgBreathingPerUser ?? 0}
-  subtitle="avg sessions per user"
-/>
+            title="Mood Logging Rate"
+            value={summary.moodLoggingRate?.toFixed(1) ?? "0.0"}
+            subtitle="Avg mood entries per active user"
+          />
 
+          <StatCard
+            title="Breathing Engagement"
+            value={summary.avgBreathingPerUser ?? 0}
+            subtitle="Avg breathing sessions per active user"
+          />
         </div>
 
 
-
         {/* ANALYTICS ROW */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:pb-20">
 
           {/* USER ACTIVITY */}
-          <div className="lg:col-span-2 bg-white p-5 rounded-xl border">
+          <div className="lg:col-span-2 bg-white p-4 rounded-xl border">
             <h3 className="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-              User Activity (Last 7 Days)
+              User Activity ({range.start} → {range.end})
             </h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={activeUsers}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Bar dataKey="activeUsers" fill="#2F855A" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {activeUsers.length === 0 ? (
+              <p className="text-sm text-gray-500 py-10 text-center">
+                No user activity in this period
+              </p>
+            ) : (
+              <ResponsiveContainer width="100%" height={210}>
+                <BarChart data={activeUsers}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tick={{ fontSize: 8 }} />
+                  <YAxis
+                    allowDecimals={false}
+                    domain={[0, 'dataMax']}
+                    tickCount={6}
+                    tick={{ fontSize: 11 }}
+                    label={{
+                      value: "Active Users",
+                      angle: -90,
+                      position: "insideLeft",
+                      style: { textAnchor: "middle" }
+                    }}
+                  />
+
+
+                  <Tooltip />
+                  <Bar dataKey="activeUsers" fill="#2F855A" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
+
 
           {/* RIGHT COLUMN */}
           <div className="flex flex-col gap-6">
@@ -193,22 +221,30 @@ function StatCard({ title, value, subtitle, muted }) {
               <h3 className="text-sm font-semibold text-gray-700 mb-2">
                 Quiz Usage
               </h3>
-              <ResponsiveContainer width="100%" height={140}>
-                <PieChart>
-                  <Pie
-                    data={quizDist}
-                    dataKey="count"
-                    nameKey="label"
-                    innerRadius={40}
-                    outerRadius={60}
-                  >
-                    {quizDist.map((_, i) => (
-                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              {quizDist.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-10">
+                  No quiz activity in this period
+                </p>
+              ) : (
+                // <div className="flex items-center justify-center h-full">
+                <ResponsiveContainer width="100%" height={210}>
+                  <PieChart>
+                    <Tooltip formatter={(value) => `${value} attempts`} />
+                    <Pie
+                      data={quizDist}
+                      dataKey="count"
+                      nameKey="label"
+                      innerRadius={40}
+                      outerRadius={80}
+                    >
+                      {quizDist.map((_, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+                // </div>
+              )}
             </div>
 
             {/* BREATHING */}
@@ -230,8 +266,6 @@ function StatCard({ title, value, subtitle, muted }) {
 
           </div>
         </div>
-
-
       </motion.div>
     </>
   );
