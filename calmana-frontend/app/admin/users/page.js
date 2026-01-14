@@ -5,13 +5,15 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 
-const PAGE_SIZE = 6;
+
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+
+  const [pageSize, setPageSize] = useState(6);
 
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
@@ -29,6 +31,22 @@ export default function AdminUsersPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    function updatePageSize() {
+      const viewportHeight = window.innerHeight;
+
+      // header + filters + pagination ≈ 320px
+      const usableHeight = viewportHeight - 320;
+
+      const rows = Math.max(7, Math.floor(usableHeight / 56));
+      setPageSize(rows);
+    }
+
+    updatePageSize();
+    window.addEventListener("resize", updatePageSize);
+    return () => window.removeEventListener("resize", updatePageSize);
+  }, []);
+
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
     if (!t) return users;
@@ -40,8 +58,8 @@ export default function AdminUsersPage() {
     );
   }, [users, q]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const current = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const current = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   function exportCSV() {
     const rows = [["username", "email", "joined"]];
@@ -115,7 +133,7 @@ export default function AdminUsersPage() {
 
             <button
               onClick={exportCSV}
-              className="bg-green-900 text-white border border-gray-300 hover:bg-gray-200 hover:text-green-800 hover:border-green-900 px-3 py-1 rounded transition"
+              className="bg-emerald-600 text-white border border-gray-300 hover:bg-gray-200 hover:text-green-800 hover:border-green-900 px-3 py-1 rounded transition"
             >
               Export CSV
             </button>
@@ -147,7 +165,7 @@ export default function AdminUsersPage() {
                   </tr>
                 ) : (
                   current.map((u) => (
-                    <tr key={u._id} className="border-b hover:bg-gray-100">
+                    <tr key={u._id} className="border-b last:border-none hover:bg-gray-100">
                       <td className="p-4">{u.username}</td>
                       <td className="p-4">{u.email}</td>
                       <td className="p-4">
@@ -197,51 +215,49 @@ export default function AdminUsersPage() {
               ))
             )}
           </div>
+        </div>
 
-
-          {/* PAGINATION */}
-          <div className="border-t px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {/* PREVIOUS */}
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                aria-label="Previous page"
-                className={`
+        {/* PAGINATION */}
+        <div className="px-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* PREVIOUS */}
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              aria-label="Previous page"
+              className={`
                 px-2 py-1 rounded border transition
                 ${page === 1
-                    ? "text-gray-300 border-gray-200 cursor-not-allowed"
-                    : "text-gray-700 border-green-300 hover:bg-green-100"
-                  }
+                  ? "text-gray-300 border-gray-200 cursor-not-allowed"
+                  : "text-gray-700 border-green-300 hover:bg-green-100"
+                }
               `}>
-                ←
-              </button>
+              ←
+            </button>
 
-              <span className="text-sm text-gray-600">
-                Page {page} / {totalPages}
-              </span>
+            <span className="text-sm text-gray-600">
+              Page {page} / {totalPages}
+            </span>
 
-              {/* NEXT */}
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                aria-label="Next page"
-                className={`
+            {/* NEXT */}
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              aria-label="Next page"
+              className={`
                 px-2 py-1 rounded border transition
                 ${page === totalPages
-                    ? "text-gray-300 border-gray-200 cursor-not-allowed"
-                    : "text-gray-700 border-green-300 hover:bg-green-100"
-                  }
+                  ? "text-gray-300 border-gray-200 cursor-not-allowed"
+                  : "text-gray-700 border-green-300 hover:bg-green-100"
+                }
               `}>
-                →
-              </button>
-            </div>
-
-            <span className="text-xs text-gray-400">
-              {filtered.length} users
-            </span>
+              →
+            </button>
           </div>
 
+          <span className="text-xs text-gray-400">
+            {filtered.length} users
+          </span>
         </div>
       </motion.div>
     </div>

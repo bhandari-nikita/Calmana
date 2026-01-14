@@ -18,13 +18,10 @@ export default function MoodGraph() {
   const [view, setView] = useState("week"); // day | week | month
   const [loading, setLoading] = useState(true);
   const [dataPoints, setDataPoints] = useState([]);
-
   const [offset, setOffset] = useState(0);
   // const [dayOffset, setDayOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState("");
-
   const [metaLabel, setMetaLabel] = useState("");
-
   const API = process.env.NEXT_PUBLIC_API_URL;
 
   const moodLabels = {
@@ -44,21 +41,14 @@ export default function MoodGraph() {
     setSelectedDate("");
   }, [view]);
 
-
-
   function formatISO(iso) {
     const [y, m, d] = iso.slice(0, 10).split("-");
     return `${d}/${m}/${y}`;
   }
 
-
-
-
   useEffect(() => {
     fetchData();
   }, [view, offset, selectedDate]);
-
-
 
   useEffect(() => {
     // 🔥 RESET meta label when switching views
@@ -66,8 +56,6 @@ export default function MoodGraph() {
       setMetaLabel(""); // clear week/month garbage immediately
     }
   }, [view]);
-
-
 
   async function fetchData() {
     setLoading(true);
@@ -81,21 +69,16 @@ export default function MoodGraph() {
       }
 
       let url = "";
-
       if (view === "today") {
         const query = selectedDate ? `?date=${selectedDate}` : "";
         url = `${API}/mood/day${query}`;
       }
-
-
       if (view === "week") {
         url = `${API}/mood/week?offset=${offset}`;
       }
-
       if (view === "month") {
         url = `${API}/mood/month?offset=${offset}`;
       }
-
 
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -141,11 +124,7 @@ export default function MoodGraph() {
         if (json.date) {
           setMetaLabel(formatFullDateFromKey(json.date));
         }
-
-
       }
-
-
 
       /* ---------- WEEK / MONTH ---------- */
       else {
@@ -166,15 +145,32 @@ export default function MoodGraph() {
           );
         }
 
-        if (view === "month") {
-          const [y, m] = json.start.slice(0, 7).split("-");
-          const monthName = new Date(Number(y), Number(m) - 1, 1)
-            .toLocaleString("en-IN", { month: "long" });
-          setMetaLabel(`${monthName} ${y}`);
+        if (view === "month" && json.days?.length) {
+          // Take the first actual data point
+          const firstDay = json.days[0].date; // YYYY-MM-DD
+
+          const utcDate = new Date(firstDay + "T00:00:00Z");
+          const istDate = new Date(utcDate.getTime() + 5.5 * 60 * 60 * 1000);
+
+          const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+          ];
+
+          setMetaLabel(
+            `${monthNames[istDate.getMonth()]} ${istDate.getFullYear()}`
+          );
         }
 
-      }
+        if (view === "month") {
+          console.log("MONTH DEBUG");
+          console.log("days:", json.days.map(d => d.date));
+          console.log("start:", json.start);
+          console.log("end:", json.end);
+        }
 
+
+      }
       setLoading(false);
     } catch (err) {
       console.error("fetchData error:", err);
@@ -182,7 +178,6 @@ export default function MoodGraph() {
       setLoading(false);
     }
   }
-
 
   function formatFullDateFromKey(key) {
     const [y, m, d] = key.split("-");
@@ -193,11 +188,9 @@ export default function MoodGraph() {
     return `${d} ${monthNames[Number(m) - 1]} ${y}`;
   }
 
-
   // if (json.date) {
   //   setMetaLabel(formatFullDateFromKey(json.date));
   // }
-
 
   function shiftDay(delta) {
     if (!selectedDate) return;
@@ -212,9 +205,6 @@ export default function MoodGraph() {
     setSelectedDate(`${ny}-${nm}-${nd}`);
   }
 
-
-
-
   const prev = () => {
     if (view === "today") shiftDay(-1);
     else setOffset((o) => o - 1);
@@ -224,7 +214,6 @@ export default function MoodGraph() {
     if (view === "today") shiftDay(1);
     else if (offset < 0) setOffset((o) => o + 1);
   };
-
 
   if (!isClient) return null;
 

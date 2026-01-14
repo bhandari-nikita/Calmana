@@ -387,7 +387,7 @@ export default function JournalPage() {
             {sidebarDateFilter && (
               <button
                 onClick={() => downloadDate(sidebarDateFilter)}
-                className="px-3 py-2 bg-green-600 text-white rounded text-sm"
+                className="px-3 py-2 bg-emerald-600 text-white rounded text-sm"
               >
                 Download Date
               </button>
@@ -402,7 +402,7 @@ export default function JournalPage() {
                 <details>
                   <summary className="cursor-pointer p-3 flex items-center justify-between bg-gray-50">
                     <div>
-                      <div className="font-medium text-sm text-green-800">
+                      <div className="font-medium text-sm text-emerald-800">
                         {dateKey}
                       </div>
                       <div className="text-xs text-gray-500">
@@ -414,7 +414,7 @@ export default function JournalPage() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => downloadDate(dateKey)}
-                        className="px-2 py-1 bg-green-600 text-white rounded text-xs"
+                        className="px-2 py-1 bg-emerald-600 text-white rounded text-xs"
                       >
                         Download
                       </button>
@@ -448,8 +448,6 @@ export default function JournalPage() {
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <div>
                             {formatISTTime(it.createdAt)}
-
-
                           </div>
 
                           <div className="flex gap-2">

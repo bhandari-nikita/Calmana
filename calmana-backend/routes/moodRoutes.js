@@ -7,8 +7,8 @@ const router = express.Router();
 
 // Mood → Numeric Map
 const moodMap = {
-  Happy: 7,
-  Excited: 6,
+  Excited: 7,
+  Happy: 6,
   Calm: 5,
   Neutral: 4,
   Tired: 3,
@@ -27,6 +27,19 @@ function getISTDateKey() {
 
   return `${y}-${m}-${d}`;
 }
+
+function getISTKeyFromDate(d) {
+  const ist = new Date(
+    d.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+
+  const y = ist.getFullYear();
+  const m = String(ist.getMonth() + 1).padStart(2, "0");
+  const day = String(ist.getDate()).padStart(2, "0");
+
+  return `${y}-${m}-${day}`;
+}
+
 
 router.get("/day", protect, async (req, res) => {
   try {
@@ -128,7 +141,8 @@ router.get("/week", protect, async (req, res) => {
     const d = new Date(weekStart);
     d.setDate(weekStart.getDate() + i);
 
-    const key = d.toISOString().slice(0, 10);
+    const key = getISTKeyFromDate(d);
+
 
     const entries = await MoodEntry.find({
       user: req.user._id,
@@ -179,7 +193,7 @@ router.get("/month", protect, async (req, res) => {
     const d = new Date(monthStart);
     d.setDate(monthStart.getDate() + i);
 
-    const key = d.toISOString().slice(0, 10);
+    const key = getISTKeyFromDate(d);
 
     const entries = await MoodEntry.find({
       user: req.user._id,
@@ -196,9 +210,10 @@ router.get("/month", protect, async (req, res) => {
 
   res.json({
     days,
-    start: monthStart.toISOString().slice(0, 10),
+    start: getISTKeyFromDate(monthStart),
   });
 });
+
 
 
 module.exports = router;

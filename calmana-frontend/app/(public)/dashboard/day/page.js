@@ -186,7 +186,7 @@ export default function DayDetailsPage() {
           {/* Buttons */}
           <div className="flex gap-2 mt-6">
             <a
-              href={`/journal/new?date=${date}`}
+              href={`/journal`}
               className="py-2 px-3 rounded-md bg-emerald-600 text-white"
             >
               Add/Edit Journal

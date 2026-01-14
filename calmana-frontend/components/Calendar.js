@@ -4,14 +4,13 @@ import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-
 const MOOD_MAP = {
   Angry: { emoji: "😡", tint: "bg-red-50", text: "text-red-800" },
   Happy: { emoji: "😊", tint: "bg-yellow-50", text: "text-amber-800" },
   Sad: { emoji: "😔", tint: "bg-blue-50", text: "text-blue-800" },
   Calm: { emoji: "😌", tint: "bg-teal-50", text: "text-teal-800" },
-  Neutral: { emoji: "😐", tint: "bg-gray-50", text: "text-gray-700" },
-  Excited: { emoji: "🤩", tint: "bg-yellow-50", text: "text-yellow-800" },
+  Neutral: { emoji: "😐", tint: "bg-beige-50", text: "text-beige-800" },
+  Excited: { emoji: "🤩", tint: "bg-orange-50", text: "text-orange-800" },
   Tired: { emoji: "😴", tint: "bg-violet-50", text: "text-violet-800" }
 };
 
@@ -22,18 +21,16 @@ function toISTKey(ts) {
   });
 }
 
-
 export default function Calendar({ moods = {}, todayKey, visibleMonth, onMonthChange }) {
 
   const router = useRouter();
   const [selectedDay] = useState(null);
 
   // Normalize moods prop -> map keyed by ISO date "YYYY-MM-DD"
-const moodByDate = useMemo(() => {
-  if (!moods || typeof moods !== "object") return {};
-  return moods; // already keyed by YYYY-MM-DD
-}, [moods]);
-
+  const moodByDate = useMemo(() => {
+    if (!moods || typeof moods !== "object") return {};
+    return moods; // already keyed by YYYY-MM-DD
+  }, [moods]);
 
   // visibleMonth must contain { year, month }
   const { year, month } = visibleMonth || { year: new Date().getFullYear(), month: new Date().getMonth() + 1 };
@@ -64,8 +61,6 @@ const moodByDate = useMemo(() => {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-
-
   function prevMonth() {
     let y = year;
     let m = month - 1;
@@ -85,10 +80,8 @@ const moodByDate = useMemo(() => {
     onMonthChange({ year: y, month: m });
   }
 
-
-
   return (
-    <div>
+    <div>                                      
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
 
         <div className="flex items-center gap-2">
@@ -101,13 +94,11 @@ const moodByDate = useMemo(() => {
         </div>
 
         <div className="hidden sm:block text-sm text-emerald-700">
-          Mood • Journal • Breathing
+          Mood • Journal • Breathing • Quiz 
         </div>
-
       </div>
 
       <div className="grid grid-cols-7 gap-1 text-[10px] sm:text-xs text-center text-emerald-700 mb-2">
-
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
           <div key={d} className="py-1">{d}</div>
         ))}
@@ -122,7 +113,6 @@ const moodByDate = useMemo(() => {
                 className="min-h-[72px] sm:min-h-[96px] rounded-lg bg-transparent"
               />
             );
-
 
             const yyyy = year;
             const mm = String(month).padStart(2, "0");
@@ -160,13 +150,12 @@ const moodByDate = useMemo(() => {
                     {day}
                   </div>
                 </div>
-
+                                    
                 <div className="mt-1 space-y-0.5 text-[10px] sm:text-xs">
 
                   {/* Mood emoji + label */}
                   {entry?.mood && (
                     <div className="flex items-center gap-1 leading-tight">
-
                       <span className={isCompact ? "text-base" : "text-lg"}>
                         {MOOD_MAP[entry.mood]?.emoji || "🙂"}
                       </span>
@@ -174,7 +163,6 @@ const moodByDate = useMemo(() => {
                         <span className="hidden sm:inline truncate">
                           {entry.mood}
                         </span>
-
                       )}
                     </div>
                   )}
@@ -211,7 +199,6 @@ const moodByDate = useMemo(() => {
                       {isCompact ? "Q" : "Quiz"}
                     </span>
                   )}
-
 
                 </div>
               </button>
