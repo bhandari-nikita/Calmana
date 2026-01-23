@@ -19,25 +19,6 @@ const QUIZ_SETS = [
         ],
     },
 
-    // {
-    //     slug: "combined",
-    //     title: "🧠 Combined Self-Check",
-    //     questions: [
-    //         "I feel overwhelmed by my responsibilities.",
-    //         "I find it hard to relax even when I try.",
-    //         "I worry about things even when there is no clear reason.",
-    //         "I feel restless or find it hard to sit still.",
-    //         "I feel sad or low most days.",
-    //         "I have lost interest in things I used to enjoy.",
-    //         "I feel emotionally drained by my studies/work.",
-    //         "I feel detached or indifferent about tasks I used to care about.",
-    //         "I have trouble falling asleep at night.",
-    //         "I wake up during the night and have trouble returning to sleep.",
-    //         "I generally feel confident in my abilities.",
-    //         "I accept myself even when I make mistakes.",
-    //     ],
-    // },
-
     {
         slug: "anxiety",
         title: "🌬️ Anxiety Quiz",
@@ -49,7 +30,7 @@ const QUIZ_SETS = [
             "I avoid situations because they make me nervous.",
             "I have difficulty concentrating due to worry.",
             "I experience sudden feelings of fear or panic.",
-             "I feel physical symptoms (like tight chest, nausea, or dizziness) even when there is no real danger.",
+            "I feel physical symptoms (like tight chest, nausea, or dizziness) even when there is no real danger.",
         ],
     },
 
@@ -115,7 +96,6 @@ const QUIZ_SETS = [
 ];
 
 /* ---------------- SUGGESTION ENGINE ---------------- */
-
 function getSuggestions(level, quizSlug) {
     const suggestions = {
         stress: {
@@ -337,11 +317,10 @@ export default function QuizRunner({ params }) {
     const suggestions = getSuggestions(level, set.slug);
 
     function getISTDateKey() {
-  return new Date().toLocaleDateString("en-CA", {
-    timeZone: "Asia/Kolkata",
-  });
-}
-
+        return new Date().toLocaleDateString("en-CA", {
+            timeZone: "Asia/Kolkata",
+        });
+    }
 
     async function handleSubmit(e) {
         e.preventDefault();

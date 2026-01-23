@@ -8,21 +8,7 @@ export default function QuizList() {
   const router = useRouter();
 
   const quizSets = [
-    // {
-    //   slug: "combined",
-    //   title: "Combined Self-Check",
-    //   emoji: "🧠",
-    //   time: "4 min",
-    //   questionsCount: 24,
-    //   description:
-    //     "A gentle overview covering stress, anxiety, depression, burnout, sleep health, and self-esteem.",
-    //   questions: [
-    //     "I feel overwhelmed by my responsibilities.",
-    //     "I find it hard to relax even when I try.",
-    //     "I feel sad or low most days.",
-    //     "I feel emotionally drained by work or studies.",
-    //   ],
-    // },
+    
     {
       slug: "stress",
       title: "Stress Check",

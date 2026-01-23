@@ -116,7 +116,7 @@ const fetchTodayMoods = async () => {
   if (!isClient) return null;
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center mt-20 sm:pb-10 space-y-8">
+    <div className="min-h-[70vh] flex flex-col items-center mt-20 sm:pb-10 sm:space-y-8 md:space-y-18 lg:space-y-8">
       <h2 className="text-xl md:text-2xl font-semibold text-[#2f5d4a] text-center">
 
         How are you feeling today?
@@ -162,7 +162,7 @@ const fetchTodayMoods = async () => {
       <button
         onClick={handleSave}
         disabled={loading}
-        className={`mt-6 md:mt-8 px-8 py-3 rounded-full text-white transition ${loading
+        className={`mt-6 mb-5 md:mt-8 px-8 py-3 rounded-full text-white transition ${loading
           ? "bg-gray-400 cursor-not-allowed"
           : "bg-[#4e937a] hover:bg-[#3f7f68]"
           }`}
@@ -173,39 +173,6 @@ const fetchTodayMoods = async () => {
       {message && (
         <p className="text-[#2f5d4a] mt-3 font-medium text-center">{message}</p>
       )}
-
-      {/* Today's average mood */}
-      {/* {averageMood && (
-        <div className="text-[#2f5d4a] text-center">
-          <p className="font-medium">
-            🧘‍♀️ Average Mood Today:{" "}
-            <span className="font-semibold">
-              {averageMood.toFixed(1)} / 7 (
-              {emojis[Math.round(averageMood) - 1]?.label || "Unknown"})
-            </span>
-          </p>
-        </div>
-      )} */}
-
-      {/* Today's entries */}
-      {/* {todayMoods.length > 0 && (
-        <div className="mt-6 w-full max-w-md text-center">
-          <h3 className="text-lg font-semibold text-[#2f5d4a]">
-            Today's Entries:
-          </h3>
-          <ul className="mt-2 space-y-1">
-            {todayMoods.map((entry, index) => (
-              <li key={index} className="text-[#2f5d4a]">
-                {new Date(entry.timestamp).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}{" "}
-                - {entry.mood}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )} */}
 
       <button
         onClick={() => router.push("/mood-graph")}

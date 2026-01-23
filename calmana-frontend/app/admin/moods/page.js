@@ -17,10 +17,15 @@ function MoodBadge({ m }) {
   return <span className={`px-2 py-1 rounded text-xs ${map[m] || "bg-gray-100 text-gray-800"}`}>{m}</span>;
 }
 
-function formatISTDate(ts) {
+function formatISTDateTime(ts) {
   if (!ts) return "";
-  return new Date(ts).toLocaleDateString("en-CA", {
+  return new Date(ts).toLocaleString("en-CA", {
     timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -71,7 +76,7 @@ export default function AdminMoodsPage() {
         m.user?.username || "Unknown",
         m.mood,
         m.moodValue,
-        formatISTDate(m.timestamp),
+        formatISTDateTime(m.timestamp),
       ])
     );
 
@@ -117,7 +122,7 @@ export default function AdminMoodsPage() {
                   <td className="p-4"><MoodBadge m={m.mood} /></td>
                   <td className="p-4">{m.moodValue}</td>
                   <td className="p-4">
-                    {formatISTDate(m.timestamp)}
+                    {formatISTDateTime(m.timestamp)}
                   </td>
                 </tr>
               ))}
@@ -142,7 +147,7 @@ export default function AdminMoodsPage() {
                     }
                   }}
                 >
-                  {m.user?.username || "Unknown"}
+                  {m.user?.username || "Guest"}
                 </p>
 
                 <div className="mt-2 flex items-center gap-2">
@@ -153,7 +158,7 @@ export default function AdminMoodsPage() {
                 </div>
 
                 <p className="text-xs text-gray-500 mt-2">
-                  {formatISTDate(m.timestamp)}
+                  formatISTDateTime(m.timestamp).toLowerCase().includes(t)
                 </p>
               </div>
             ))

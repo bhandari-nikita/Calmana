@@ -21,9 +21,9 @@ export default function Home() {
           p-10 sm:p-14
           bg-white
           rounded-3xl
-          border border-green-200
+          border border-emerald-200
         ">
-          <h1 className="text-3xl sm:text-4xl font-semibold text-green-800">
+          <h1 className="text-3xl sm:text-4xl font-semibold text-emerald-800">
             A calmer space for your mind 🌿
           </h1>
 
@@ -42,10 +42,10 @@ export default function Home() {
               className="
                 px-7 py-3
                 rounded-full
-                bg-green-600
+                bg-emerald-600
                 text-white
                 font-medium
-                hover:bg-green-700
+                hover:bg-emerald-700
                 transition
               "
             >
@@ -57,10 +57,10 @@ export default function Home() {
               className="
                 px-7 py-3
                 rounded-full
-                border border-green-600
-                text-green-700
+                border border-emerald-600
+                text-emerald-700
                 font-medium
-                hover:bg-green-50
+                hover:bg-emerald-50
                 transition
               "
             >

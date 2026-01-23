@@ -39,48 +39,13 @@ export default function BoxBreathingPage() {
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
-  // ---------- Utility ----------
-  // function getTodayKey() {
-  //   const d = new Date();
-  //   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-  //     d.getDate()
-  //   ).padStart(2, "0")}`;
-  // }
 
   function getTodayKey() {
     const istNow = new Date(
       new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
     );
-
     return istNow.toISOString().slice(0, 10);
   }
-
-
-  // function incrementCyclesToday() {
-  //   const key = `calmana_cycles_${getTodayKey()}`;
-  //   const stored = Number(localStorage.getItem(key)) || 0;
-  //   const updated = stored + 1;
-
-  //   localStorage.setItem(key, String(updated));
-  //   setCyclesToday(updated);
-  // }
-
-  // ---------- NEW: Reset guest cycles after login ----------
-  // useEffect(() => {
-  //   const user = JSON.parse(localStorage.getItem("user"));
-  //   if (user?._id) {
-  //     // user logged in → reset guest breathing cycles
-  //     Object.keys(localStorage).forEach((key) => {
-  //       if (key.startsWith("calmana_cycles_")) {
-  //         localStorage.removeItem(key);
-  //       }
-  //     });
-
-  //     setCyclesToday(0);              // 👉 Reset UI too
-  //     setCyclesThisSession(0);        // 👉 Fresh session
-  //   }
-  // }, []);
-  // ---------------------------------------------------------
 
   // ---------- Save session ----------
   async function saveBreathingSession() {
@@ -102,10 +67,10 @@ export default function BoxBreathingPage() {
       });
 
       const data = await response.json();
-      console.log("Breathing session saved:", data);
+      
 
     } catch (error) {
-      console.error("Error saving breathing session:", error);
+      
     }
   }
 

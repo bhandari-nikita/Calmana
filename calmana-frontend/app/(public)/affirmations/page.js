@@ -210,52 +210,72 @@ export default function AffirmationsPage() {
   };
 
   if (!isClient) return null;
-
   const isFavorite = favorites.includes(affirmation);
 
   return (
-    <div className="min-h-[70vh] flex flex-col bg-green-50 text-gray-800">
-      <main className="flex-grow flex flex-col items-center justify-center p-6">
-        <h2 className="text-3xl font-bold text-green-700 mb-6">
+    <div className="min-h-[85vh] flex flex-col bg-emerald-50 text-gray-800">
+      <main className="
+        flex-grow
+        flex flex-col
+        items-center
+        px-4
+        py-10
+        sm:py-14
+        md:justify-center
+      ">
+
+        <h2 className="text-3xl font-bold text-emerald-700 mb-6">
           Daily Affirmations
         </h2>
 
         {/* Main Card */}
-        <div className="bg-white shadow-lg rounded-2xl p-6 max-w-lg text-center relative">
+        <div className="
+        bg-white shadow-lg rounded-2xl
+          p-6 sm:p-8
+          w-full max-w-xl
+          text-center relative
+        ">
+
 
           {/* Heart */}
           <button
             onClick={toggleFavorite}
-            className="absolute right-4 top-4 text-3xl"
+            className="absolute right-4 top-4 text-2xl sm:text-3xl"
           >
             {isFavorite ? "❤️" : "🤍"}
           </button>
 
           <p
-            className={`text-lg text-gray-700 italic mb-6 transition-opacity duration-500 px-5 ${
-              fade ? "opacity-100" : "opacity-0"
-            }`}
+            className={`text-lg text-gray-700 italic mb-6 transition-opacity duration-500 px-5 ${fade ? "opacity-100" : "opacity-0"
+              }`}
           >
             "{affirmation}"
           </p>
 
-          <div className="flex flex-wrap gap-3 justify-center">
-            <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md"
+          <div className="
+            flex flex-col
+            sm:flex-row
+            flex-wrap
+            gap-3
+            justify-center
+          ">
+
+            <button className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-md"
               onClick={generateAffirmation}
             >
               New
             </button>
-            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md"
+            <button className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg shadow-md"
               onClick={speakAffirmation}
             >
               🔊 Read
             </button>
-            <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-md"
+            <button className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg shadow-md"
               onClick={shareAffirmation}
             >
               📤 Share
             </button>
-            <button className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg shadow-md"
+            <button className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg shadow-md"
               onClick={downloadAffirmationImage}
             >
               📸 Download
@@ -267,7 +287,7 @@ export default function AffirmationsPage() {
         <div className="mt-10">
           <button
             onClick={() => setShowFav(!showFav)}
-            className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md flex gap-2"
+            className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-md flex gap-2"
           >
             {showFav ? "Hide Favorites" : "Show Favorites"} ⭐
           </button>
@@ -275,12 +295,11 @@ export default function AffirmationsPage() {
 
         {/* ⭐ Collapsible Favorites Section */}
         <div
-          className={`transition-all duration-500 overflow-hidden w-full max-w-xl ${
-            showFav ? "max-h-[1000px] mt-6" : "max-h-0"
-          }`}
+          className={`transition-all duration-500 overflow-hidden w-full max-w-xl ${showFav ? "max-h-[1000px] mt-6" : "max-h-0"
+            }`}
         >
-          <div className="bg-white shadow-lg rounded-2xl p-5 border border-green-100">
-            <h3 className="text-xl font-semibold text-green-700 mb-4 flex items-center gap-2">
+          <div className="bg-white shadow-lg rounded-2xl p-5 border border-emerald-100">
+            <h3 className="text-xl font-semibold text-emerald-700 mb-4 flex items-center gap-2">
               🌟 Your Favorite Affirmations
             </h3>
 
@@ -295,9 +314,9 @@ export default function AffirmationsPage() {
                 {favorites.map((fav, index) => (
                   <div
                     key={index}
-                    className="bg-green-50 border border-green-200 p-4 rounded-xl shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                    className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl shadow-sm hover:shadow-md transition flex flex-col justify-between"
                   >
-                    <p className="text-sm text-green-900 italic">"{fav}"</p>
+                    <p className="text-sm text-emerald-900 italic">"{fav}"</p>
                     <button
                       onClick={() => deleteFavorite(fav)}
                       className="mt-3 text-red-600 hover:text-red-800 self-end"

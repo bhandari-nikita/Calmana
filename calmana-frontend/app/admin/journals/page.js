@@ -4,7 +4,17 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 
-
+function formatISTDateTime(ts) {
+  if (!ts) return "";
+  return new Date(ts).toLocaleString("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function AdminJournalsPage() {
   const [journals, setJournals] = useState([]);
@@ -47,30 +57,30 @@ export default function AdminJournalsPage() {
     return () => window.removeEventListener("resize", updatePageSize);
   }, []);
 
-
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return journals;
 
     return journals.filter(j =>
-      (j.user?.username || "Guest").toLowerCase().includes(term)
-
+      (j.user?.username || "guest").toLowerCase().includes(term) ||
+      formatISTDateTime(j.createdAt).toLowerCase().includes(term)
     );
-  }, [journals, q]);
 
+  }, [journals, q]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const current = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   function exportCSV() {
-    const rows = [["username", "date"]];
+    const rows = [["user", "date_time", "privacy"]];
+
     filtered.forEach(j =>
       rows.push([
         j.user?.username || "Guest",
-        new Date(j.createdAt).toLocaleString()
+        formatISTDateTime(j.createdAt),
+        "Encrypted - content not stored",
       ])
     );
-
 
     const csv = rows
       .map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(","))
@@ -84,6 +94,7 @@ export default function AdminJournalsPage() {
     a.click();
     URL.revokeObjectURL(url);
   }
+
 
   return (
     <div className="space-y-4 pb-8 w-full lg:max-w-6xl lg:mx-auto">

@@ -1,3 +1,4 @@
+//calmana-frontend/app/ClientWrapper.js
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -13,7 +14,7 @@ export default function ClientWrapper({ children }) {
   return (
     <>
       {!isAdminRoute && <Navbar />}
-      <main className="p-6">{children}</main>
+      <main className="flex-grow">{children}</main>
       {!isAdminRoute && <Footer />}
     </>
   );

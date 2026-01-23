@@ -76,7 +76,7 @@ export default function Footer() {
 
       {/* Bottom Bar (slightly darker for separation) */}
       <div className="bg-[#cbe7cb] border-t border-[#a8d5ba] py-4 text-center text-xs sm:text-sm">
-        © {new Date().getFullYear()} Calmana • Academic Project • All rights reserved
+        © {new Date().getFullYear()} Calmana • All rights reserved
       </div>
     </footer>
   );

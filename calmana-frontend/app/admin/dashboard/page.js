@@ -59,7 +59,6 @@ export default function AdminDashboard() {
             params: range,
             headers: { Authorization: `Bearer ${token}` }
           }),
-
           axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/admin-data/analytics/mood-trend`, {
             params: range,
             headers: { Authorization: `Bearer ${token}` }
@@ -118,9 +117,6 @@ export default function AdminDashboard() {
     );
   }
 
-
-
-
   return (
     <>
       <motion.div
@@ -139,14 +135,11 @@ export default function AdminDashboard() {
               System status and recent activity
             </p>
           </div>
-
-
         </div>
 
         <p className="text-xs font-semibold text-gray-500 uppercase mb-3">
           Overview Metrics
         </p>
-
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -159,20 +152,17 @@ export default function AdminDashboard() {
             value={summary.activeToday === 0 ? "—" : summary.activeToday}
             subtitle={summary.activeToday === 0 ? "No activity today" : null}
           />
-
           <StatCard
             title="Mood Logging Rate"
             value={summary.moodLoggingRate?.toFixed(1) ?? "0.0"}
             subtitle="Avg mood entries per active user"
           />
-
           <StatCard
             title="Breathing Engagement"
             value={summary.avgBreathingPerUser ?? 0}
             subtitle="Avg breathing sessions per active user"
           />
         </div>
-
 
         {/* ANALYTICS ROW */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:pb-20">
@@ -204,14 +194,12 @@ export default function AdminDashboard() {
                     }}
                   />
 
-
                   <Tooltip />
                   <Bar dataKey="activeUsers" fill="#2F855A" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
-
 
           {/* RIGHT COLUMN */}
           <div className="flex flex-col gap-6">
@@ -262,7 +250,6 @@ export default function AdminDashboard() {
                 Avg sessions per user
               </p>
             </div> */}
-
 
           </div>
         </div>

@@ -1,18 +1,28 @@
+// calmana-frontend/app/admin/quizzes/page.js
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 
-const PAGE_SIZE = 10;
+function formatISTDateTime(ts) {
+  if (!ts) return "";
+  return new Date(ts).toLocaleString("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 function ScoreBadge({ pct }) {
   const color =
     pct >= 80
       ? "bg-green-100 text-green-800"
       : pct >= 50
-      ? "bg-yellow-100 text-yellow-800"
-      : "bg-red-100 text-red-800";
-
+        ? "bg-yellow-100 text-yellow-800"
+        : "bg-red-100 text-red-800";
   return <span className={`px-2 py-1 rounded text-xs ${color}`}>{pct}%</span>;
 }
 
@@ -22,20 +32,34 @@ export default function AdminQuizzesPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
+  const [pageSize, setPageSize] = useState(6);
+
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
     if (!token) {
       window.location.href = "/admin/login";
       return;
     }
-
     axios
-      .get("http://localhost:5000/api/admin-data/quizzes", {
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/admin-data/quizzes`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((r) => setQuizzes(r.data || []))
       .catch((e) => console.error(e))
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    function updatePageSize() {
+      const viewportHeight = window.innerHeight;
+      // header + filters + pagination ≈ 320px
+      const usableHeight = viewportHeight - 320;
+      const rows = Math.max(7, Math.floor(usableHeight / 56));
+      setPageSize(rows);
+    }
+    updatePageSize();
+    window.addEventListener("resize", updatePageSize);
+    return () => window.removeEventListener("resize", updatePageSize);
   }, []);
 
   const filtered = useMemo(() => {
@@ -45,25 +69,27 @@ export default function AdminQuizzesPage() {
     return quizzes.filter(
       (x) =>
         (x.userId?.username || "").toLowerCase().includes(t) ||
-        (x.quizTitle || "").toLowerCase().includes(t)
+        (x.quizTitle || x.quizSlug || "").toLowerCase().includes(t)
     );
+
   }, [quizzes, q]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const current = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const current = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   function exportCSV() {
     const rows = [["user", "quiz", "score", "max", "percent", "date"]];
 
     filtered.forEach((q) =>
       rows.push([
-        q.userId?.username || "Unknown",
+        q.userId?.username || "Guest",
         q.quizTitle || q.quizSlug,
         q.score,
         q.maxScore,
-        q.percentage,
-        new Date(q.takenAt).toLocaleString(),
+        Math.round(q.percentage || 0),
+        formatISTDateTime(q.takenAt),
       ])
+
     );
 
     const csv = rows
@@ -109,7 +135,7 @@ export default function AdminQuizzesPage() {
 
             <button
               onClick={exportCSV}
-              className="bg-green-700 text-white px-3 py-1 rounded"
+              className="bg-emerald-600 text-white px-3 py-1 rounded"
             >
               Export CSV
             </button>
@@ -117,7 +143,8 @@ export default function AdminQuizzesPage() {
         </div>
 
         {/* TABLE */}
-        <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
+        <div className="bg-white rounded-lg shadow-sm overflow-x-auto hidden md:block">
+
           <table className="min-w-full table-auto">
             <thead className="bg-green-50 text-left text-sm text-green-800">
               <tr>
@@ -144,8 +171,22 @@ export default function AdminQuizzesPage() {
                 </tr>
               ) : (
                 current.map((qi) => (
-                  <tr key={qi._id} className="border-b hover:bg-green-50">
-                    <td className="p-4">{qi.userId?.username || "Unknown"}</td>
+                  <tr key={qi._id} className="border-b last:border-none hover:bg-green-50">
+                    <td className="p-4">
+                      {qi.userId ? (
+                        <span
+                          className="text-green-700 cursor-pointer hover:underline"
+                          onClick={() =>
+                            window.location.href = `/admin/users?q=${qi.userId.username}`
+                          }
+                        >
+                          {qi.userId.username}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 italic">Guest</span>
+                      )}
+                    </td>
+
                     <td className="p-4">{qi.quizTitle || qi.quizSlug}</td>
                     <td className="p-4">
                       {qi.score}/{qi.maxScore}
@@ -154,8 +195,9 @@ export default function AdminQuizzesPage() {
                       <ScoreBadge pct={Math.round(qi.percentage || 0)} />
                     </td>
                     <td className="p-4">
-                      {new Date(qi.takenAt).toLocaleDateString()}
+                      {formatISTDateTime(qi.takenAt)}
                     </td>
+
                   </tr>
                 ))
               )}
@@ -163,31 +205,93 @@ export default function AdminQuizzesPage() {
           </table>
         </div>
 
-        {/* PAGINATION */}
-        <div className="flex items-center justify-between text-sm">
-          <div>{filtered.length} quiz attempts</div>
+        <div className="md:hidden space-y-3">
+          {loading ? (
+            <p className="text-sm text-gray-500">Loading…</p>
+          ) : current.length === 0 ? (
+            <p className="text-sm text-gray-500">No attempts.</p>
+          ) : (
+            current.map(qi => (
+              <div
+                key={qi._id}
+                className="bg-white border border-green-100 rounded-xl p-4 shadow-sm"
+              >
+                <p
+                  className={`font-semibold ${qi.userId
+                    ? "text-green-700 cursor-pointer hover:underline"
+                    : "text-gray-400 italic"
+                    }`}
+                  onClick={() => {
+                    if (qi.userId) {
+                      window.location.href = `/admin/users?q=${qi.userId.username}`;
+                    }
+                  }}
+                >
+                  {qi.userId?.username || "Guest"}
+                </p>
 
-          <div className="flex items-center gap-2">
+                <p className="text-sm text-gray-700 mt-1">
+                  Quiz: <strong>{qi.quizTitle || qi.quizSlug}</strong>
+                </p>
+
+                <p className="text-sm text-gray-700 mt-1">
+                  Score: {qi.score}/{qi.maxScore}
+                </p>
+
+                <div className="mt-2">
+                  <ScoreBadge pct={Math.round(qi.percentage || 0)} />
+                </div>
+
+                <p className="text-xs text-gray-500 mt-2">
+                  {formatISTDateTime(qi.takenAt)}
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+
+
+        {/* PAGINATION */}
+        <div className="px-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* PREVIOUS */}
             <button
-              disabled={page === 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="px-2 py-1 border rounded"
-            >
-              Prev
+              disabled={page === 1}
+              aria-label="Previous page"
+              className={`
+                px-2 py-1 rounded border transition
+                ${page === 1
+                  ? "text-gray-300 border-gray-200 cursor-not-allowed"
+                  : "text-gray-700 border-green-300 hover:bg-green-100"
+                }
+              `}>
+              ←
             </button>
 
-            <div>
+            <span className="text-sm text-gray-600">
               Page {page} / {totalPages}
-            </div>
+            </span>
 
+            {/* NEXT */}
             <button
-              disabled={page === totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="px-2 py-1 border rounded"
-            >
-              Next
+              disabled={page === totalPages}
+              aria-label="Next page"
+              className={`
+                px-2 py-1 rounded border transition
+                ${page === totalPages
+                  ? "text-gray-300 border-gray-200 cursor-not-allowed"
+                  : "text-gray-700 border-green-300 hover:bg-green-100"
+                }
+              `}>
+              →
             </button>
           </div>
+
+          <span className="text-xs text-gray-400">
+            {filtered.length} attempts
+          </span>
         </div>
       </motion.div>
     </div>

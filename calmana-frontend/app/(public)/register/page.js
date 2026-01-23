@@ -27,9 +27,9 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-green-50">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-emerald-50">
       <div className="bg-white p-8 rounded max-w-md w-full">
-        <h2 className="text-2xl font-bold text-green-800 mb-4">Create account</h2>
+        <h2 className="text-2xl font-bold text-emerald-800 mb-4">Create account</h2>
         {msg && <p className="mb-3 text-red-600">{msg}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -59,14 +59,14 @@ export default function RegisterPage() {
             className="w-full p-2 border rounded"
           />
 
-          <button type="submit" className="w-full bg-green-600 text-white p-2 rounded">
+          <button type="submit" className="w-full bg-emerald-600 text-white p-2 rounded">
             Sign up
           </button>
         </form>
 
         <p className="mt-3 text-sm">
           Already have an account?{" "}
-          <a href="/login" className="text-green-700 underline">Login</a>
+          <a href="/login" className="text-emerald-700 underline">Login</a>
         </p>
       </div>
     </div>

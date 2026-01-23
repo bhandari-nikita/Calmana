@@ -2,6 +2,7 @@
 // import Footer from '@/components/Footer'
 import './globals.css'
 // import Navbar from '@/components/Navbar'
+import ClientWrapper from './ClientWrapper'
 
 export const metadata = {
   title: 'Calmana', // fixed name spelling
@@ -19,20 +20,18 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* Add inline favicon styling to make it circular and cleaner */}
         <style>{`
-          link[rel="icon"] {
+            link[rel="icon"] {
             border-radius: 50%;
             object-fit: contain;
           }
         `}</style>
       </head>
-      {/* <body className="bg-[var(--soft-green)] text-gray-800"> */}
-      <body className="bg-white text-gray-800">
-
-        {/* <Navbar /> */}
-        <main className="p-1">{children}</main>
-        {/* <Footer /> */}
+      
+      <body className="min-h-screen flex flex-col bg-white text-gray-800">
+        <ClientWrapper>
+          {children}
+        </ClientWrapper>
       </body>
     </html>
   );

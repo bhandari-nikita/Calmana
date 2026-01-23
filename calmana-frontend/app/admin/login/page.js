@@ -1,6 +1,5 @@
 //calmana-frontend/app/admin/login/page.js
 "use client";
-
 import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -12,20 +11,17 @@ export default function AdminLogin() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-
   async function handleLogin(e) {
     e.preventDefault();
     if (loading) return;
-
     setError("");
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/admin/login", {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/login`, {
         username,
         password,
       });
-
       localStorage.setItem("adminToken", res.data.token);
       router.push("/admin/dashboard");
     } catch {
@@ -35,24 +31,17 @@ export default function AdminLogin() {
     }
   }
 
-
-
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
       <div className="w-full max-w-md border border-gray-300 bg-gray-50 shadow-sm">
 
         {/* BRAND HEADER */}
         <div className="flex items-center justify-center px-6 py-4 border-b border-gray-300 bg-white">
-
           <img
             src="/assets/Calmana_green.png"   // make sure this exists in /public
             alt="Calmana"
             className="h-7 w-auto object-contain"
-
           />
-          {/* <span className="text-sm font-semibold text-green-800">
-          CALMANA
-        </span> */}
         </div>
 
         {/* SYSTEM STRIP */}
@@ -111,8 +100,6 @@ export default function AdminLogin() {
           >
             {loading ? "Signing in…" : "Sign In"}
           </button>
-
-
         </form>
 
         {/* FOOTER CONTEXT */}
@@ -124,7 +111,4 @@ export default function AdminLogin() {
       </div>
     </div >
   );
-
-
-
 }
