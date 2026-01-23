@@ -17,17 +17,19 @@ function MoodBadge({ m }) {
   return <span className={`px-2 py-1 rounded text-xs ${map[m] || "bg-gray-100 text-gray-800"}`}>{m}</span>;
 }
 
-function formatISTDateTime(ts) {
+function formatMoodDate(ts) {
   if (!ts) return "";
-  return new Date(ts).toLocaleString("en-CA", {
+  return new Date(ts).toLocaleString("en-GB", {
     timeZone: "Asia/Kolkata",
-    year: "numeric",
-    month: "2-digit",
     day: "2-digit",
+    month: "short",
+    year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   });
 }
+
 
 export default function AdminMoodsPage() {
   const [moods, setMoods] = useState([]);
@@ -62,7 +64,7 @@ export default function AdminMoodsPage() {
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
     if (!t) return moods;
-    return moods.filter(m => (m.user?.username || "").toLowerCase().includes(t) || (m.mood || "").toLowerCase().includes(t) || formatISTDate(m.timestamp).toLowerCase().includes(t)
+    return moods.filter(m => (m.user?.username || "").toLowerCase().includes(t) || (m.mood || "").toLowerCase().includes(t) || formatMoodDate(m.timestamp).toLowerCase().includes(t)
     );
   }, [moods, q]);
 
@@ -70,13 +72,13 @@ export default function AdminMoodsPage() {
   const current = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   function exportCSV() {
-    const rows = [["user", "mood", "value", "date"]];
+    const rows = [["user", "mood", "value", "created_at"]];
     filtered.forEach(m =>
       rows.push([
         m.user?.username || "Unknown",
         m.mood,
         m.moodValue,
-        formatISTDateTime(m.timestamp),
+        formatMoodDate(m.timestamp),
       ])
     );
 
@@ -122,7 +124,7 @@ export default function AdminMoodsPage() {
                   <td className="p-4"><MoodBadge m={m.mood} /></td>
                   <td className="p-4">{m.moodValue}</td>
                   <td className="p-4">
-                    {formatISTDateTime(m.timestamp)}
+                    {formatMoodDate(m.timestamp)}
                   </td>
                 </tr>
               ))}
@@ -158,7 +160,7 @@ export default function AdminMoodsPage() {
                 </div>
 
                 <p className="text-xs text-gray-500 mt-2">
-                  formatISTDateTime(m.timestamp).toLowerCase().includes(t)
+                  {formatMoodDate(m.timestamp)}
                 </p>
               </div>
             ))

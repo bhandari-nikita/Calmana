@@ -4,17 +4,19 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 
-function formatISTDateTime(ts) {
+function formatQuizEventDate(ts) {
   if (!ts) return "";
-  return new Date(ts).toLocaleString("en-CA", {
+  return new Date(ts).toLocaleString("en-GB", {
     timeZone: "Asia/Kolkata",
-    year: "numeric",
-    month: "2-digit",
     day: "2-digit",
+    month: "short",
+    year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   });
 }
+
 
 function ScoreBadge({ pct }) {
   const color =
@@ -78,7 +80,7 @@ export default function AdminQuizzesPage() {
   const current = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   function exportCSV() {
-    const rows = [["user", "quiz", "score", "max", "percent", "date"]];
+    const rows = [["user", "quiz", "score", "max", "percent", "taken_at"]];
 
     filtered.forEach((q) =>
       rows.push([
@@ -87,7 +89,7 @@ export default function AdminQuizzesPage() {
         q.score,
         q.maxScore,
         Math.round(q.percentage || 0),
-        formatISTDateTime(q.takenAt),
+        formatQuizEventDate(q.takenAt),
       ])
 
     );
@@ -119,10 +121,10 @@ export default function AdminQuizzesPage() {
         transition={{ duration: 0.35 }}
         className="space-y-4"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-2xl font-bold text-green-900">Quizzes</h1>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <input
               value={q}
               onChange={(e) => {
@@ -130,7 +132,7 @@ export default function AdminQuizzesPage() {
                 setPage(1);
               }}
               placeholder="Search user or quiz"
-              className="border rounded px-3 py-1"
+              className="border rounded px-3 py-2 w-full sm:w-64"
             />
 
             <button
@@ -195,7 +197,7 @@ export default function AdminQuizzesPage() {
                       <ScoreBadge pct={Math.round(qi.percentage || 0)} />
                     </td>
                     <td className="p-4">
-                      {formatISTDateTime(qi.takenAt)}
+                      {formatQuizEventDate(qi.takenAt)}
                     </td>
 
                   </tr>
@@ -216,35 +218,25 @@ export default function AdminQuizzesPage() {
                 key={qi._id}
                 className="bg-white border border-green-100 rounded-xl p-4 shadow-sm"
               >
-                <p
-                  className={`font-semibold ${qi.userId
-                    ? "text-green-700 cursor-pointer hover:underline"
-                    : "text-gray-400 italic"
-                    }`}
-                  onClick={() => {
-                    if (qi.userId) {
-                      window.location.href = `/admin/users?q=${qi.userId.username}`;
-                    }
-                  }}
-                >
+                <p className="font-semibold text-green-800">
                   {qi.userId?.username || "Guest"}
                 </p>
 
                 <p className="text-sm text-gray-700 mt-1">
-                  Quiz: <strong>{qi.quizTitle || qi.quizSlug}</strong>
+                  <strong>{qi.quizTitle || qi.quizSlug}</strong>
                 </p>
 
-                <p className="text-sm text-gray-700 mt-1">
-                  Score: {qi.score}/{qi.maxScore}
-                </p>
-
-                <div className="mt-2">
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-sm text-gray-700">
+                    {qi.score}/{qi.maxScore}
+                  </span>
                   <ScoreBadge pct={Math.round(qi.percentage || 0)} />
                 </div>
 
                 <p className="text-xs text-gray-500 mt-2">
-                  {formatISTDateTime(qi.takenAt)}
+                  {formatQuizEventDate(qi.takenAt)}
                 </p>
+
               </div>
             ))
           )}

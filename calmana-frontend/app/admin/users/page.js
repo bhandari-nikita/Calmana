@@ -5,7 +5,15 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 
-
+function formatUserJoinDate(ts) {
+  if (!ts) return "";
+  return new Date(ts).toLocaleDateString("en-GB", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
@@ -62,13 +70,13 @@ export default function AdminUsersPage() {
   const current = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   function exportCSV() {
-    const rows = [["username", "email", "joined"]];
+    const rows = [["username", "email", "joined_on"]];
 
     filtered.forEach((u) =>
       rows.push([
         u.username,
         u.email,
-        new Date(u.createdAt).toLocaleDateString(),
+        formatUserJoinDate(u.createdAt),
       ])
     );
 
@@ -169,7 +177,7 @@ export default function AdminUsersPage() {
                       <td className="p-4">{u.username}</td>
                       <td className="p-4">{u.email}</td>
                       <td className="p-4">
-                        {new Date(u.createdAt).toISOString().split("T")[0]}
+                        {formatUserJoinDate(u.createdAt)}
                       </td>
                       <td className="p-4">
                         <button
@@ -201,7 +209,7 @@ export default function AdminUsersPage() {
                   <p className="font-semibold text-gray-800">{u.username}</p>
                   <p className="text-sm text-gray-600 break-all">{u.email}</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Joined: {new Date(u.createdAt).toISOString().split("T")[0]}
+                    Joined: {formatUserJoinDate(u.createdAt)}
                   </p>
 
                   <button

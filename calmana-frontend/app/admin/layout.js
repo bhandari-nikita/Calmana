@@ -72,8 +72,7 @@ export default function AdminLayout({ children }) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 text-gray-800">
-
+    <div className="flex h-screen bg-gray-50 text-gray-800 overflow-hidden">
 
       {/* SIDEBAR */}
       <aside

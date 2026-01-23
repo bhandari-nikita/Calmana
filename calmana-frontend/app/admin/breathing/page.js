@@ -4,6 +4,20 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 
+function formatBreathingEventDate(ts) {
+  if (!ts) return "";
+  return new Date(ts).toLocaleString("en-GB", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+}
+
 export default function AdminBreathingPage() {
   const [items, setItems] = useState([]);
   const [q, setQ] = useState("");
@@ -48,8 +62,8 @@ export default function AdminBreathingPage() {
   const current = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   function exportCSV() {
-    const rows = [["username", "cycles_completed", "session_date"]];
-    filtered.forEach(x => rows.push([x.userId?.username || "Guest", x.cyclesCompleted, new Date(x.createdAt).toLocaleString()]));
+    const rows = [["username", "cycles_completed", "session_at"]];
+    filtered.forEach(x => rows.push([x.userId?.username || "Guest", x.cyclesCompleted, formatBreathingEventDate(x.createdAt)]));
     const csv = rows.map(r => r.map(c => `"${(c || "").toString().replace(/"/g, '""')}"`).join(",")).join("\n");
     const b = new Blob([csv], { type: "text/csv" }); const url = URL.createObjectURL(b); const a = document.createElement("a"); a.href = url; a.download = "breathing.csv"; a.click(); URL.revokeObjectURL(url);
   }
@@ -117,7 +131,7 @@ export default function AdminBreathingPage() {
                     )}
                   </td>
                   <td className="p-4">{s.cyclesCompleted}</td>
-                  <td className="p-4">{new Date(s.createdAt).toLocaleString()}</td>
+                  <td className="p-4">{formatBreathingEventDate(s.createdAt)}</td>
                 </tr>
               ))}
             </tbody>
@@ -153,7 +167,7 @@ export default function AdminBreathingPage() {
                   Cycles: <span className="font-medium">{s.cyclesCompleted}</span>
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  {new Date(s.createdAt).toLocaleString()}
+                  {formatBreathingEventDate(s.createdAt)}
                 </p>
               </div>
             ))

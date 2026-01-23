@@ -4,17 +4,19 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 
-function formatISTDateTime(ts) {
+function formatJournalDate(ts) {
   if (!ts) return "";
-  return new Date(ts).toLocaleString("en-CA", {
+  return new Date(ts).toLocaleString("en-GB", {
     timeZone: "Asia/Kolkata",
-    year: "numeric",
-    month: "2-digit",
     day: "2-digit",
+    month: "short",
+    year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   });
 }
+
 
 export default function AdminJournalsPage() {
   const [journals, setJournals] = useState([]);
@@ -63,7 +65,7 @@ export default function AdminJournalsPage() {
 
     return journals.filter(j =>
       (j.user?.username || "guest").toLowerCase().includes(term) ||
-      formatISTDateTime(j.createdAt).toLowerCase().includes(term)
+      formatJournalDate(j.createdAt).toLowerCase().includes(term)
     );
 
   }, [journals, q]);
@@ -72,12 +74,12 @@ export default function AdminJournalsPage() {
   const current = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   function exportCSV() {
-    const rows = [["user", "date_time", "privacy"]];
+    const rows = [["user", "created_at", "privacy"]];
 
     filtered.forEach(j =>
       rows.push([
         j.user?.username || "Guest",
-        formatISTDateTime(j.createdAt),
+        formatJournalDate(j.createdAt),
         "Encrypted - content not stored",
       ])
     );
@@ -169,7 +171,7 @@ export default function AdminJournalsPage() {
                     </td>
 
                     <td className="p-4 w-88">
-                      {new Date(j.createdAt).toLocaleString()}
+                      {formatJournalDate(j.createdAt)}
                     </td>
 
 
@@ -193,12 +195,21 @@ export default function AdminJournalsPage() {
           ) : (
             current.map(j => (
               <div key={j._id} className="bg-white border border-green-100 rounded-xl p-4 shadow-sm">
-                <p className="font-semibold text-gray-800">
-                  {j.user?.username || "Guest"}
-                </p>
+                {j.user ? (
+                  <p
+                    className="font-semibold text-green-700 cursor-pointer hover:underline"
+                    onClick={() =>
+                      window.location.href = `/admin/users?q=${j.user.username}`
+                    }
+                  >
+                    {j.user.username}
+                  </p>
+                ) : (
+                  <p className="font-semibold text-gray-400 italic">Guest</p>
+                )}
 
                 <p className="text-xs text-gray-500 mt-1">
-                  {new Date(j.createdAt).toLocaleString()}
+                  {formatJournalDate(j.createdAt)}
                 </p>
                 <p className="text-xs text-gray-500 mt-2">
                   Encrypted — metadata only

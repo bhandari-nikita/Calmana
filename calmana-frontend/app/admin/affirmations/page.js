@@ -4,25 +4,22 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 
-function formatISTDateTime(ts) {
+function formatAffirmationDate(ts) {
   if (!ts) return "";
-  return new Date(ts).toLocaleString("en-CA", {
+  return new Date(ts).toLocaleString("en-GB", {
     timeZone: "Asia/Kolkata",
-    year: "numeric",
-    month: "2-digit",
     day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour12: false,
   });
 }
-
 
 export default function AdminAffirmationsPage() {
   const [items, setItems] = useState([]);
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-
   const [pageSize, setPageSize] = useState(6);
 
   useEffect(() => {
@@ -57,13 +54,13 @@ export default function AdminAffirmationsPage() {
   const current = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   function exportCSV() {
-    const rows = [["user", "affirmation", "date_time"]];
+    const rows = [["user", "affirmation", "created_at"]];
 
     filtered.forEach(a => {
       rows.push([
         a.userId?.username || "Guest",
-        a.text || "",                  // ← THIS STAYS
-        formatISTDateTime(a.createdAt)
+        a.text || "",                 
+        formatAffirmationDate(a.createdAt)
       ]);
     });
 
@@ -114,7 +111,7 @@ export default function AdminAffirmationsPage() {
                 </td>
 
                 <td className="p-4">{a.text}</td>
-                <td className="p-4">{formatISTDateTime(a.createdAt)}</td>
+                <td className="p-4">{formatAffirmationDate(a.createdAt)}</td>
 
               </tr>
             ))}
@@ -153,7 +150,7 @@ export default function AdminAffirmationsPage() {
               </p>
 
               <p className="text-xs text-gray-500 mt-2">
-                {formatISTDateTime(a.createdAt)}
+                {formatAffirmationDate(a.createdAt)}
               </p>
             </div>
           ))
