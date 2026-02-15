@@ -29,11 +29,14 @@ app.use(cookieParser());
 // CORS
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: process.env.ALLOWED_ORIGINS === "*"
+      ? true
+      : process.env.ALLOWED_ORIGINS.split(","),
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
+
 
 app.options("*", cors());
 
@@ -74,4 +77,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
 
 console.log("Loaded key length:", process.env.ENCRYPTION_KEY?.length);
-console.log("Loaded key:", process.env.ENCRYPTION_KEY);
+
