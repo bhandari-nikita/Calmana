@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -100,7 +101,7 @@ return (
       <div className="flex items-center justify-between">
 
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <Image
             src="/assets/Calmana_green.png"
             alt="Calmana Logo"
@@ -108,13 +109,13 @@ return (
             height={36}
             priority
           />
-        </a>
+        </Link>
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-6 text-sm">
-          <a href="/" className={isActive("/")}>Home</a>
-          <a href="/about" className={isActive("/about")}>About</a>
-          <a href="/quiz" className={isActive("/quiz")}>Quiz</a>
+          <Link href="/" className={isActive("/")}>Home</Link>
+          <Link href="/about" className={isActive("/about")}>About</Link>
+          <Link href="/quiz" className={isActive("/quiz")}>Quiz</Link>
 
           {/* Tools Dropdown */}
           <div className="relative" ref={dropdownRef}>
@@ -133,20 +134,20 @@ return (
                   ["Affirmations", "/affirmations"],
                   ["Breathing", "/breathing"],
                 ].map(([label, link]) => (
-                  <a
+                  <Link
                     key={link}
                     href={link}
                     className={`block px-4 py-2 hover:bg-[#d4f0d4] ${isActive(link)}`}
                   >
                     {label}
-                  </a>
+                  </Link>
                 ))}
               </div>
             )}
           </div>
 
-          <a href="/support" className={isActive("/support")}>Support</a>
-          {username && <a href="/dashboard" className={isActive("/dashboard")}>Dashboard</a>}
+          <Link href="/support" className={isActive("/support")}>Support</Link>
+          {username && <Link href="/dashboard" className={isActive("/dashboard")}>Dashboard</Link>}
         </div>
 
         {/* Desktop Auth Buttons */}
@@ -164,24 +165,24 @@ return (
                 Logout
               </button>
 
-              <a
+              <Link
                 href="/settings"
                 className="px-3 py-2 bg-[#4e937a] text-white rounded-lg hover:bg-[#3f7f68]"
               >
                 Settings
-              </a>
+              </Link>
             </>
           ) : (
             <>
-              <a href="/login" className="px-4 py-2 bg-[#4e937a] text-white rounded-lg">
+              <Link href="/login" className="px-4 py-2 bg-[#4e937a] text-white rounded-lg">
                 Login
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/register"
                 className="px-4 py-2 border border-[#4e937a] text-[#4e937a] rounded-lg hover:bg-[#4e937a] hover:text-white"
               >
                 Register
-              </a>
+              </Link>
             </>
           )}
         </div>
@@ -209,21 +210,21 @@ return (
             ["Breathing", "/breathing"],
             ["Support", "/support"],
           ].map(([label, link]) => (
-            <a
+            <Link
               key={link}
               href={link}
               className={`block ${isActive(link)}`}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               {label}
-            </a>
+            </Link>
           ))}
 
           <div className="pt-3 border-t border-[#a8d5ba]">
             {username ? (
               <>
-                <a href="/dashboard" className="block mb-2">Dashboard</a>
-                <a href="/settings" className="block mb-2">Settings</a>
+                <Link href="/dashboard" className="block mb-2">Dashboard</Link>
+                <Link href="/settings" className="block mb-2">Settings</Link>
                 <button
                   onClick={handleLogout}
                   className="w-full text-left text-red-600"
@@ -233,8 +234,8 @@ return (
               </>
             ) : (
               <>
-                <a href="/login" className="block mb-2">Login</a>
-                <a href="/register" className="block">Register</a>
+                <Link href="/login" className="block mb-2">Login</Link>
+                <Link href="/register" className="block">Register</Link>
               </>
             )}
           </div>
