@@ -1,9 +1,12 @@
 // calmana-frontend/app/(public)/dashboard/day/page.js
-export const dynamic = "force-dynamic";
 
 "use client";
+export const dynamic = "force-dynamic";
+
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+
+import Link from "next/link";
 
 export default function DayDetailsPage() {
   const search = useSearchParams();
@@ -44,9 +47,9 @@ export default function DayDetailsPage() {
     <main className="min-h-screen bg-emerald-50 p-6">
       <div className="max-w-3xl mx-auto">
 
-        <a href="/dashboard" className="text-emerald-700 mb-4 inline-block">
+        <Link href="/dashboard" className="text-emerald-700 mb-4 inline-block">
           ← Back to calendar
-        </a>
+        </Link>
 
         <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
 
@@ -187,19 +190,19 @@ export default function DayDetailsPage() {
 
           {/* Buttons */}
           <div className="flex gap-2 mt-6">
-            <a
+            <Link
               href={`/journal`}
               className="py-2 px-3 rounded-md bg-emerald-600 text-white"
             >
               Add/Edit Journal
-            </a>
+            </Link>
 
-            <a
+            <Link
               href={`/mood-tracker`}
               className="py-2 px-3 rounded-md border text-emerald-700"
             >
               Log Mood
-            </a>
+            </Link>
           </div>
         </div>
       </div>
