@@ -47,7 +47,24 @@ export default function DayDetailsClient() {
 
   return (
     <main className="min-h-screen bg-emerald-50 p-6">
-      {/* your entire UI JSX here unchanged */}
+      <div className="max-w-3xl mx-auto">
+
+        <Link href="/dashboard" className="text-emerald-700 mb-4 inline-block">
+          ← Back to calendar
+        </Link>
+
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
+
+          <h2 className="text-2xl font-semibold text-emerald-900">{date}</h2>
+
+          {/* moods */}
+          {/* journals */}
+          {/* breathing */}
+          {/* quiz */}
+          {/* buttons */}
+
+        </div>
+      </div>
     </main>
   );
 }
