@@ -145,12 +145,15 @@ export default function AffirmationsPage() {
   };
 
   // Share
-  const shareAffirmation = () => {
-    const text = encodeURIComponent(
-      `"${affirmation}"\n\nSent via Calmana 🌿\nhttps://calmana.in`
-    );
-    window.open(`https://wa.me/?text=${text}`, "_blank");
-  };
+const shareAffirmation = () => {
+  const siteUrl = window.location.origin;
+
+  const message = `"${affirmation}"\n\nSent via Calmana 💚\n${siteUrl}`;
+
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+  window.open(whatsappUrl, "_blank");
+};
 
   // Download
   const downloadAffirmationImage = () => {
