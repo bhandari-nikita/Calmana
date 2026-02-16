@@ -1,3 +1,4 @@
+//calmana-frontend/app/%28public%29/dashboard/day/DayDetailsClient.js
 "use client";
 
 import { useEffect, useState } from "react";
@@ -14,7 +15,8 @@ export default function DayDetailsClient() {
   useEffect(() => {
     if (!date) return;
 
-    const API = process.env.NEXT_PUBLIC_API_URL;
+    const API = process.env.NEXT_PUBLIC_API_URL || "https://calmana-backend.onrender.com";
+
     const token = localStorage.getItem("token");
 
     async function load() {
@@ -24,6 +26,10 @@ export default function DayDetailsClient() {
         });
 
         const json = await res.json();
+
+        console.log("API:", API);
+        console.log("Response JSON:", json);
+
         setData(json);
       } catch (err) {
         console.error("Day fetch error:", err);

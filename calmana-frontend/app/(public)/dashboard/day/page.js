@@ -1,3 +1,4 @@
+//calmana-frontend/app/%28public%29/dashboard/day/page.js
 import { Suspense } from "react";
 import DayDetailsClient from "./DayDetailsClient";
 
