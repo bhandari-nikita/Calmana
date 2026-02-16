@@ -23,11 +23,11 @@ router.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await User.create({
-  username,
-  email,
-  passwordHash: hashedPassword,
-  registeredDate: getISTDateKey(), // ⭐ ADD THIS LINE
-});
+      username,
+      email,
+      passwordHash: hashedPassword,
+      registeredDate: getISTDateKey(), // ⭐ ADD THIS LINE
+    });
 
 
     res.status(201).json({ success: true, message: "User registered" });
@@ -70,6 +70,45 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
+// CHANGE PASSWORD
+router.post("/change-password", async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    // Get user from token
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check old password
+    const match = await bcrypt.compare(oldPassword, user.passwordHash);
+    if (!match) {
+      return res.status(400).json({ error: "Old password is incorrect" });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    user.passwordHash = hashedPassword;
+    await user.save();
+
+    res.json({ success: true, message: "Password updated successfully" });
+
+  } catch (err) {
+    console.error("Change password error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 
 module.exports = router;
