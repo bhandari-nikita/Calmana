@@ -107,14 +107,9 @@ export default function SettingsPage() {
 
         try {
             const token = localStorage.getItem("token");
-            const userId = localStorage.getItem("userId"); // Your backend returns this during login
 
             if (!token) {
                 setPassMsg("Not logged in.");
-                return;
-            }
-            if (!userId) {
-                setPassMsg("User ID missing. Please log out and log in again.");
                 return;
             }
 
@@ -122,9 +117,9 @@ export default function SettingsPage() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    userId,
                     oldPassword: oldPass,
                     newPassword: newPass,
                 }),
